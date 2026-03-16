@@ -1,10 +1,12 @@
-import { app, BrowserWindow, shell } from 'electron'
+import { app, BrowserWindow, shell, dialog } from 'electron'
 import { join } from 'path'
+import { execSync } from 'child_process'
 import { is } from '@electron-toolkit/utils'
 import { registerProjectsIpc } from './ipc/projects'
 import { registerTasksIpc } from './ipc/tasks'
 import { registerRunnerIpc } from './ipc/runner'
 import { registerReportsIpc } from './ipc/reports'
+import { getRunnerStatus, stopRunner } from './core/runner'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -25,6 +27,24 @@ function createWindow(): void {
     mainWindow?.show()
   })
 
+  mainWindow.on('close', (e) => {
+    const { isRunning } = getRunnerStatus()
+    if (isRunning) {
+      const choice = dialog.showMessageBoxSync(mainWindow!, {
+        type: 'warning',
+        buttons: ['取消', '强制关闭'],
+        defaultId: 0,
+        title: '确认关闭',
+        message: '有任务正在执行，关闭将中止执行。确定要关闭吗？'
+      })
+      if (choice === 0) {
+        e.preventDefault()
+      } else {
+        stopRunner()
+      }
+    }
+  })
+
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
     return { action: 'deny' }
@@ -38,6 +58,16 @@ function createWindow(): void {
 }
 
 app.whenReady().then(() => {
+  // Check Claude CLI
+  try {
+    execSync('claude --version', { encoding: 'utf-8' })
+  } catch {
+    dialog.showErrorBox(
+      'Claude CLI 未安装',
+      '请先安装 Claude Code CLI:\nnpm install -g @anthropic-ai/claude-code'
+    )
+  }
+
   registerProjectsIpc()
   registerTasksIpc()
   registerReportsIpc()
