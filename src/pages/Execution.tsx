@@ -5,15 +5,13 @@ import { useRunnerStore } from '../stores/runner-store'
 import { useTaskStore } from '../stores/task-store'
 
 export default function Execution(): React.ReactElement {
-  const { isRunning, logs, currentTask, start, stop, clearLogs, initEventListener } = useRunnerStore()
+  const { isRunning, logs, currentTask, start, stop, clearLogs } = useRunnerStore()
   const { tasks, fetchTasks } = useTaskStore()
   const logEndRef = useRef<HTMLDivElement>(null)
   const [selectedTask, setSelectedTask] = useState<string | null>(null)
 
   useEffect(() => {
     fetchTasks()
-    const unsubscribe = initEventListener()
-    return unsubscribe
   }, [])
 
   useEffect(() => {

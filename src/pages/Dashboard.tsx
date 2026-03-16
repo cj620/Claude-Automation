@@ -62,7 +62,7 @@ export default function Dashboard(): React.ReactElement {
         </Button>
         <Button
           icon={<PlayCircleOutlined />}
-          onClick={start}
+          onClick={async () => { await start(); navigate('/execution') }}
           disabled={isRunning || counts.pending === 0}
           loading={isRunning}
         >
