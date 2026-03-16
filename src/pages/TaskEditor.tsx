@@ -24,11 +24,74 @@ const INITIAL_VALUES: FormValues = {
   verification: '',
 }
 
+// 解析 Markdown 内容到表单字段
+function parseContentToFormValues(content: string): Partial<FormValues> {
+  const result: Partial<FormValues> = {}
+
+  // 解析标题: # 任务：xxx
+  const titleMatch = content.match(/# 任务[：:]\s*(.+)/)
+  if (titleMatch) {
+    result.title = titleMatch[1].trim()
+  }
+
+  // 解析背景: ## 背景\nxxx
+  const backgroundMatch = content.match(/## 背景\s*\n([\s\S]*?)(?=##|$)/)
+  if (backgroundMatch) {
+    result.background = backgroundMatch[1].trim()
+  }
+
+  // 解析目标: ## 目标\n- [ ] xxx
+  const goalsMatch = content.match(/## 目标\s*\n([\s\S]*?)(?=##|$)/)
+  if (goalsMatch) {
+    const goals = goalsMatch[1]
+      .split('\n')
+      .map(line => line.replace(/^- \[ \]\s*/, '').trim())
+      .filter(Boolean)
+      .join('\n')
+    result.goals = goals
+  }
+
+  // 解析约束: ## 约束\n- xxx
+  const constraintsMatch = content.match(/## 约束\s*\n([\s\S]*?)(?=##|$)/)
+  if (constraintsMatch) {
+    const constraints = constraintsMatch[1]
+      .split('\n')
+      .map(line => line.replace(/^-\s*/, '').trim())
+      .filter(Boolean)
+      .join('\n')
+    result.constraints = constraints
+  }
+
+  // 解析涉及文件: ## 涉及文件\n- xxx
+  const filesMatch = content.match(/## 涉及文件\s*\n([\s\S]*?)(?=##|$)/)
+  if (filesMatch) {
+    const files = filesMatch[1]
+      .split('\n')
+      .map(line => line.replace(/^-\s*/, '').trim())
+      .filter(Boolean)
+      .join('\n')
+    result.files = files
+  }
+
+  // 解析验证方式: ## 验证方式\n- xxx
+  const verificationMatch = content.match(/## 验证方式\s*\n([\s\S]*?)(?=##|$)/)
+  if (verificationMatch) {
+    const verification = verificationMatch[1]
+      .split('\n')
+      .map(line => line.replace(/^-\s*/, '').trim())
+      .filter(Boolean)
+      .join('\n')
+    result.verification = verification
+  }
+
+  return result
+}
+
 export default function TaskEditor(): React.ReactElement {
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
   const [form] = Form.useForm<FormValues>()
-  const { tasks, fetchTasks, createTask, updateTask } = useTaskStore()
+  const { fetchTasks, createTask, updateTask } = useTaskStore()
   const { start } = useRunnerStore()
   const [formValues, setFormValues] = useState<FormValues>(INITIAL_VALUES)
   const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit')
@@ -38,16 +101,21 @@ export default function TaskEditor(): React.ReactElement {
   useEffect(() => {
     if (isEdit) {
       fetchTasks().then(() => {
-        const task = tasks.find((t) => t.id === id)
+        // 使用 useTaskStore 获取最新的 tasks，而不是闭包中的旧值
+        const currentTasks = useTaskStore.getState().tasks
+        const task = currentTasks.find((t) => t.id === id)
         if (task) {
+          const parsedValues = parseContentToFormValues(task.content || '')
           form.setFieldsValue({
             title: task.name,
-            background: '',
-            goals: '',
-            constraints: '',
-            files: '',
-            verification: '',
+            ...parsedValues,
           })
+          // 同时更新 formValues 状态以刷新预览
+          setFormValues((prev) => ({
+            ...prev,
+            title: task.name,
+            ...parsedValues,
+          }))
         }
       })
     }

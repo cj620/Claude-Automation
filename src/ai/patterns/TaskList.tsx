@@ -1,5 +1,6 @@
 import { Table, Button, Space, Popconfirm } from 'antd'
 import { EditOutlined, DeleteOutlined, ReloadOutlined } from '@ant-design/icons'
+import dayjs from 'dayjs'
 import StatusBadge from '../components/StatusBadge'
 import EmptyState from '../components/EmptyState'
 import { type TaskStatus } from '../constants'
@@ -42,6 +43,7 @@ export default function TaskList({ tasks, onEdit, onDelete, onRetry }: TaskListP
       dataIndex: 'updatedAt',
       key: 'updatedAt',
       width: 180,
+      render: (value: string) => value ? dayjs(value).format('YYYY-MM-DD HH:mm:ss') : '-',
     },
     {
       title: '操作',
