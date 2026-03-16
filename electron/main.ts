@@ -1,6 +1,10 @@
 import { app, BrowserWindow, shell } from 'electron'
 import { join } from 'path'
 import { is } from '@electron-toolkit/utils'
+import { registerProjectsIpc } from './ipc/projects'
+import { registerTasksIpc } from './ipc/tasks'
+import { registerRunnerIpc } from './ipc/runner'
+import { registerReportsIpc } from './ipc/reports'
 
 let mainWindow: BrowserWindow | null = null
 
@@ -34,7 +38,11 @@ function createWindow(): void {
 }
 
 app.whenReady().then(() => {
+  registerProjectsIpc()
+  registerTasksIpc()
+  registerReportsIpc()
   createWindow()
+  registerRunnerIpc(() => mainWindow)
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow()
