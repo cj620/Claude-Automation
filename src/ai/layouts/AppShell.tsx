@@ -61,7 +61,7 @@ export default function AppShell() {
             letterSpacing: '-0.02em',
             color: isDark ? '#E6EDF3' : 'rgba(0,0,0,0.88)',
           }}>
-            <span style={{ color: '#00E5CC' }}>AI</span> Automation
+            <span style={{ color: '#00E5CC' }}>Claude</span> Automation
           </span>
           <ProjectSwitcher />
         </div>

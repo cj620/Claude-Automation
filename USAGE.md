@@ -23,12 +23,12 @@
 
 ### 1.1 必须安装
 
-| 工具 | 最低版本 | 安装方式 |
-|------|----------|----------|
-| Node.js | 18+ | https://nodejs.org |
-| Git | 2.x | https://git-scm.com |
-| Claude Code CLI | 最新 | `npm install -g @anthropic-ai/claude-code` |
-| pnpm | 8+ | `npm install -g pnpm` |
+| 工具            | 最低版本 | 安装方式                                   |
+| --------------- | -------- | ------------------------------------------ |
+| Node.js         | 18+      | https://nodejs.org                         |
+| Git             | 2.x      | https://git-scm.com                        |
+| Claude Code CLI | 最新     | `npm install -g @anthropic-ai/claude-code` |
+| pnpm            | 8+       | `npm install -g pnpm`                      |
 
 ### 1.2 必须有
 
@@ -104,12 +104,12 @@ code tasks/pending/001_my_task.md   # 或用任何编辑器
 <序号>_<简述>.md
 ```
 
-| 规则 | 说明 |
-|------|------|
-| 以数字序号开头 | 控制执行顺序（按文件名排序执行） |
-| 下划线分隔 | 可读性好 |
-| `.md` 后缀 | 必须，runner 只识别 `.md` 文件 |
-| 不以 `_` 开头 | 以 `_` 开头的文件会被忽略（如 `_template.md`） |
+| 规则           | 说明                                           |
+| -------------- | ---------------------------------------------- |
+| 以数字序号开头 | 控制执行顺序（按文件名排序执行）               |
+| 下划线分隔     | 可读性好                                       |
+| `.md` 后缀     | 必须，runner 只识别 `.md` 文件                 |
+| 不以 `_` 开头  | 以 `_` 开头的文件会被忽略（如 `_template.md`） |
 
 **示例**：
 
@@ -125,22 +125,27 @@ code tasks/pending/001_my_task.md   # 或用任何编辑器
 # 任务：[动词] [具体目标]
 
 ## 背景
+
 [为什么要做这个改动，上下文是什么]
 
 ## 目标
+
 - [ ] 具体目标 1
 - [ ] 具体目标 2
 
 ## 约束
+
 - 不要修改 public API
 - 不要删除现有的导出
 - 保持向后兼容
 
 ## 涉及文件
+
 - src/components/xxx.vue（主要修改）
 - src/utils/xxx.ts（可能需要调整）
 
 ## 验证方式
+
 - 确保 TypeScript 编译通过: npx tsc --noEmit
 - 确保现有导出不变
 ```
@@ -230,6 +235,7 @@ node runner.mjs
 ```
 
 **前提条件**：
+
 - git 工作区必须干净（`ai-automation/` 和 `.claude/` 目录除外）
 - 如果有未提交的变更，runner 会拒绝执行并提示
 
@@ -290,13 +296,13 @@ node report.mjs
 
 报告包含以下部分：
 
-| 部分 | 内容 |
-|------|------|
-| 概要 | 完成/失败/待执行任务数量，AI 分支数量 |
-| 完成的任务 | 每个任务的 session ID、轮次、花费 |
-| 失败的任务 | 失败任务列表 |
+| 部分         | 内容                                               |
+| ------------ | -------------------------------------------------- |
+| 概要         | 完成/失败/待执行任务数量，AI 分支数量              |
+| 完成的任务   | 每个任务的 session ID、轮次、花费                  |
+| 失败的任务   | 失败任务列表                                       |
 | Git 分支变更 | 每个 AI 分支的 diff 统计（修改了几个文件、多少行） |
-| 待执行的任务 | 还在 pending 中的任务 |
+| 待执行的任务 | 还在 pending 中的任务                              |
 
 ---
 
@@ -371,6 +377,7 @@ node cron.mjs
 ```
 
 保持终端运行即可：
+
 - **01:00** — 自动执行 `runner.mjs`
 - **09:00** — 自动生成报告
 
@@ -402,7 +409,7 @@ pm2 startup
 
 1. 打开"任务计划程序"（搜索 `taskschd.msc`）
 2. 点击"创建基本任务"
-3. 名称：`AI Automation Runner`
+3. 名称：`Claude Automation Runner`
 4. 触发器：每天，时间 00:50
 5. 操作：启动程序
    - 程序：`node`
@@ -411,7 +418,8 @@ pm2 startup
 6. 完成
 
 再创建一个报告任务：
-- 名称：`AI Automation Report`
+
+- 名称：`Claude Automation Report`
 - 时间：09:00
 - 参数：`report.mjs`
 
@@ -447,6 +455,7 @@ allowedTools: [
 ```
 
 **安全提示**：不要添加以下工具，除非你确切知道自己在做什么：
+
 - `Bash(rm *)` — 可能删除文件
 - `Bash(git push *)` — 可能推送到远程
 - `Bash(npm install *)` — 可能修改依赖
@@ -494,22 +503,27 @@ Cron 表达式格式：`分 时 日 月 周`
 # 任务：为 src/utils/format/index.ts 补充类型注解
 
 ## 背景
+
 该模块的函数缺少 TypeScript 类型注解，影响开发体验和类型安全。
 
 ## 目标
+
 - [ ] 为所有导出函数的参数添加类型注解
 - [ ] 为所有导出函数的返回值添加类型注解
 - [ ] 不使用 any 类型，使用具体类型
 
 ## 约束
+
 - 仅添加类型注解，不修改任何运行时逻辑
 - 不删除任何现有导出
 - 不引入新的第三方依赖
 
 ## 涉及文件
+
 - src/utils/format/index.ts
 
 ## 验证方式
+
 - npx tsc --noEmit 编译通过
 ```
 
@@ -519,26 +533,31 @@ Cron 表达式格式：`分 时 日 月 周`
 # 任务：将 getUserInfo 重命名为 fetchUserProfile
 
 ## 背景
+
 函数命名不够语义化，getUserInfo 实际是发起 API 请求获取用户资料，
 应该用 fetch 前缀更准确地表达其行为。
 
 ## 目标
+
 - [ ] 将 getUserInfo 函数重命名为 fetchUserProfile
 - [ ] 更新所有导入和调用处
 - [ ] 更新相关类型定义（如有）
 
 ## 约束
+
 - 仅做重命名，不修改函数内部逻辑
 - 不修改 API 路径
 - 保持导出方式不变
 
 ## 涉及文件
+
 - src/service/apis/user.ts（函数定义）
 - src/views/user/profile.vue（调用处）
 - src/views/user/settings.vue（调用处）
 - src/store/modules/user.ts（调用处）
 
 ## 验证方式
+
 - npx tsc --noEmit 编译通过
 - 搜索项目中不再有 getUserInfo 的引用
 ```
@@ -549,23 +568,28 @@ Cron 表达式格式：`分 时 日 月 周`
 # 任务：将 src/service/apis/product.ts 中的 API 迁移到 resData 模式
 
 ## 背景
+
 项目正在将 API 调用从旧的 request.ts 模式迁移到新的 resData.ts 模式。
 product.ts 中仍在使用旧模式。
 
 ## 目标
+
 - [ ] 将所有 import { post, get } from '@/service/request' 改为 import { post, get } from '@/service/instance/resData'
 - [ ] 调整函数签名匹配 resData 模式（返回 BaseApi<T>）
 - [ ] 为每个 API 函数添加 Params 和 Result 类型
 
 ## 约束
+
 - 不修改 API 路径
 - 不修改请求参数结构
 - 保持所有导出名称不变
 
 ## 涉及文件
+
 - src/service/apis/product.ts
 
 ## 验证方式
+
 - npx tsc --noEmit 编译通过
 - 确保所有函数仍然被正确导出
 ```
@@ -576,24 +600,29 @@ product.ts 中仍在使用旧模式。
 # 任务：为 src/utils/dom/ 下的工具函数添加 JSDoc 注释
 
 ## 背景
+
 DOM 工具函数缺少文档，新成员难以理解用法。
 
 ## 目标
+
 - [ ] 为每个导出函数添加 JSDoc 注释
 - [ ] 注释包含：@description, @param, @returns, @example
 - [ ] 示例代码要可运行
 
 ## 约束
+
 - 仅添加注释，不修改任何代码逻辑
 - 不修改函数签名
 - 注释用中文
 
 ## 涉及文件
+
 - src/utils/dom/index.ts
 - src/utils/dom/focus.ts
 - src/utils/dom/ellipsis.ts
 
 ## 验证方式
+
 - npx tsc --noEmit 编译通过
 ```
 
@@ -603,23 +632,28 @@ DOM 工具函数缺少文档，新成员难以理解用法。
 # 任务：将 src/views/publish/amazon/constants/ 中的魔法数字提取为命名常量
 
 ## 背景
+
 代码中有多处硬编码的数字和字符串，可读性差，修改困难。
 
 ## 目标
+
 - [ ] 找出所有魔法数字和硬编码字符串
 - [ ] 提取为有意义名称的常量
 - [ ] 将常量集中到 constants 文件中
 
 ## 约束
+
 - 不修改业务逻辑
 - 常量命名用 UPPER_SNAKE_CASE
 - 保持运行时行为完全一致
 
 ## 涉及文件
+
 - src/views/publish/amazon/constants/index.ts
 - src/views/publish/amazon/detail/components/（搜索硬编码值）
 
 ## 验证方式
+
 - npx tsc --noEmit 编译通过
 - 搜索确认不再有裸露的魔法数字
 ```
@@ -638,6 +672,7 @@ M  src/views/xxx.vue
 **原因**：Runner 要求 git 工作区干净，防止任务执行过程中与你的改动冲突。
 
 **解决**：
+
 ```bash
 # 方法 1：提交你的改动
 git add . && git commit -m "wip: save progress"
@@ -657,6 +692,7 @@ git stash pop
 **原因**：系统找不到 `claude` 命令。
 
 **解决**：
+
 ```bash
 # 确认 Claude CLI 已安装
 claude --version
@@ -678,6 +714,7 @@ Error: Claude Code cannot be launched inside another Claude Code session.
 **原因**：在 Claude Code 的终端里运行 runner，触发了嵌套会话检测。
 
 **解决**：Runner 已自动处理（清除 `CLAUDECODE` 环境变量）。如果仍然出现，手动执行：
+
 ```bash
 # Windows PowerShell
 $env:CLAUDECODE = ""; node runner.mjs
@@ -695,6 +732,7 @@ unset CLAUDECODE && node runner.mjs
 **原因**：任务太复杂，超过了 10 分钟的默认超时。
 
 **解决**：在 `runner.mjs` 中增大超时时间：
+
 ```js
 taskTimeoutMs: 20 * 60 * 1000,  // 改为 20 分钟
 ```
@@ -710,6 +748,7 @@ taskTimeoutMs: 20 * 60 * 1000,  // 改为 20 分钟
 **原因**：Claude Code 使用额度已用完。
 
 **解决**：Runner 会自动等待 30 分钟后继续。你也可以：
+
 - 减少 `maxTurns`（如改为 5）降低单任务消耗
 - 减少同时排队的任务数量
 - 把重要任务排在前面
@@ -735,6 +774,7 @@ node runner.mjs
 如果两个任务修改了同一个文件，merge 时可能出现冲突。
 
 **解决**：
+
 ```bash
 # 先 merge 第一个
 git merge ai/001_add_types

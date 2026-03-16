@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-AI Automation is an Electron + React desktop application that manages Claude Code CLI tasks for automated code modifications. It provides a UI for creating tasks, executing them via Claude Code headless mode, and viewing execution reports.
+Claude Automation is an Electron + React desktop application that manages Claude Code CLI tasks for automated code modifications. It provides a UI for creating tasks, executing them via Claude Code headless mode, and viewing execution reports.
 
 **Tech Stack**: Electron 33, React 18, Ant Design 5, Zustand (state), React Router 6, TypeScript, electron-vite
 
@@ -50,6 +50,7 @@ electron/                # Electron main process
 ### State Management
 
 Uses Zustand for state management:
+
 - `src/stores/project-store.ts` - Project management
 - `src/stores/task-store.ts` - Task CRUD operations
 - `src/stores/runner-store.ts` - Execution state and log streaming
@@ -57,6 +58,7 @@ Uses Zustand for state management:
 ### IPC Communication
 
 Renderer communicates with main process via `window.api` (exposed through preload):
+
 - `window.api.projects.*` - Project operations
 - `window.api.tasks.*` - Task operations
 - `window.api.runner.*` - Execution control
@@ -65,6 +67,7 @@ Renderer communicates with main process via `window.api` (exposed through preloa
 ### Routing
 
 Uses React Router v6 with HashRouter:
+
 - `/` - Dashboard
 - `/tasks` - Task board (kanban)
 - `/tasks/new` - Create task
@@ -75,6 +78,7 @@ Uses React Router v6 with HashRouter:
 ### Design System
 
 The project includes a comprehensive design system under `src/ai/`:
+
 - **Theme**: Dark mode by default with light mode toggle. Primary accent: cyan `#00E5CC`
 - **Components**: StatusBadge, StatCard, LogViewer, TaskCard, PageHeader, EmptyState, MarkdownRenderer, ThemeToggle
 - **Layouts**: AppShell (main layout with collapsible sidebar), MasterDetail, SplitPane
