@@ -43,11 +43,12 @@ export function getActiveProject(): Project | null {
 
 export function addProject(projectRoot: string, name: string): Project {
   const config = loadProjectsConfig()
+  const id = uuidv4()
   const project: Project = {
-    id: uuidv4(),
+    id,
     name,
     projectRoot,
-    automationDir: join(projectRoot, 'ai-automation'),
+    automationDir: join(CONFIG_DIR, 'data', id),
     config: { ...DEFAULT_RUNNER_CONFIG }
   }
   config.projects.push(project)

@@ -92,7 +92,7 @@ export async function runAllTasks(project: Project, onEvent: EventCallback): Pro
 
         try {
           execSync('git checkout -- .', { cwd: project.projectRoot })
-          execSync('git clean -fd --exclude=ai-automation/', { cwd: project.projectRoot })
+          execSync('git clean -fd', { cwd: project.projectRoot })
         } catch { /* ignore cleanup errors */ }
 
         try {
@@ -200,7 +200,7 @@ async function executeClaudeTask(
 
 function checkGitClean(projectRoot: string): void {
   const status = execSync(
-    'git status --porcelain --ignore-submodules -- . ":(exclude)ai-automation/" ":(exclude).claude/"',
+    'git status --porcelain --ignore-submodules -- . ":(exclude).claude/"',
     { cwd: projectRoot, encoding: 'utf-8' }
   ).trim()
 
