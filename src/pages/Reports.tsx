@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Card, List, Empty, Tag, Space, Spin } from 'antd'
+import { List, Tag, Space, Spin } from 'antd'
 import { FileTextOutlined } from '@ant-design/icons'
-import ReactMarkdown from 'react-markdown'
+import { PageHeader, MarkdownRenderer, EmptyState } from '../ai/components'
+import { MasterDetail } from '../ai/layouts'
 
 interface ReportSummary {
   date: string
@@ -35,51 +36,60 @@ export default function Reports(): React.ReactElement {
   }, [selectedDate])
 
   return (
-    <div style={{ display: 'flex', gap: 16 }}>
-      <Card title="报告列表" style={{ width: 260, flexShrink: 0 }}>
-        {reports.length === 0 ? (
-          <Empty description="暂无报告" image={Empty.PRESENTED_IMAGE_SIMPLE} />
-        ) : (
-          <List
-            size="small"
-            dataSource={reports}
-            renderItem={r => (
-              <List.Item
-                onClick={() => setSelectedDate(r.date)}
-                style={{
-                  cursor: 'pointer',
-                  background: selectedDate === r.date ? '#e6f7ff' : undefined
-                }}
-              >
-                <List.Item.Meta
-                  avatar={<FileTextOutlined />}
-                  title={r.date}
-                  description={
-                    <Space size={4}>
-                      <Tag color="green">{r.successCount} 成功</Tag>
-                      <Tag color="red">{r.failCount} 失败</Tag>
-                    </Space>
-                  }
-                />
-              </List.Item>
-            )}
-          />
-        )}
-      </Card>
+    <div>
+      <PageHeader title="报告" />
 
-      <Card
-        title={selectedDate ? `报告: ${selectedDate}` : '选择报告'}
-        style={{ flex: 1 }}
-        styles={{ body: { maxHeight: 'calc(100vh - 200px)', overflow: 'auto' } }}
-      >
-        {loading ? (
-          <Spin />
-        ) : content ? (
-          <ReactMarkdown>{content}</ReactMarkdown>
-        ) : (
-          <Empty description="选择左侧报告查看" />
-        )}
-      </Card>
+      <MasterDetail
+        sidebarTitle="报告列表"
+        sidebarWidth={260}
+        sidebar={
+          reports.length === 0 ? (
+            <EmptyState type="no-reports" />
+          ) : (
+            <List
+              size="small"
+              dataSource={reports}
+              renderItem={(r) => (
+                <List.Item
+                  onClick={() => setSelectedDate(r.date)}
+                  style={{
+                    cursor: 'pointer',
+                    background: selectedDate === r.date ? 'var(--ai-color-glow)' : undefined,
+                    padding: '8px 12px',
+                    borderRadius: 4,
+                    transition: 'background 0.2s',
+                  }}
+                >
+                  <List.Item.Meta
+                    avatar={<FileTextOutlined style={{ color: 'var(--ai-color-status-running)' }} />}
+                    title={r.date}
+                    description={
+                      <Space size={4}>
+                        <Tag color="green">{r.successCount} 成功</Tag>
+                        <Tag color="red">{r.failCount} 失败</Tag>
+                      </Space>
+                    }
+                  />
+                </List.Item>
+              )}
+            />
+          )
+        }
+        contentTitle={selectedDate ? `报告: ${selectedDate}` : '选择报告'}
+        content={
+          <div style={{ padding: 20 }}>
+            {loading ? (
+              <div style={{ textAlign: 'center', padding: 48 }}>
+                <Spin />
+              </div>
+            ) : content ? (
+              <MarkdownRenderer content={content} maxHeight="calc(100vh - 280px)" />
+            ) : (
+              <EmptyState type="no-reports" description="选择左侧报告查看" />
+            )}
+          </div>
+        }
+      />
     </div>
   )
 }
