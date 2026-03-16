@@ -52,10 +52,12 @@ export async function runAllTasks(project: Project, onEvent: EventCallback): Pro
       const branch = `ai/${taskName}`
 
       try {
-        execSync(`git checkout -b ${branch}`, {
-          cwd: project.projectRoot,
-          encoding: 'utf-8'
-        })
+        // If branch already exists (from a previous failed run), switch to it; otherwise create new
+        try {
+          execSync(`git checkout -b ${branch}`, { cwd: project.projectRoot, encoding: 'utf-8' })
+        } catch {
+          execSync(`git checkout ${branch}`, { cwd: project.projectRoot, encoding: 'utf-8' })
+        }
 
         moveTask(project.automationDir, taskName, 'pending', 'running')
 
