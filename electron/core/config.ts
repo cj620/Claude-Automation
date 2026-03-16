@@ -25,7 +25,22 @@ export function loadProjectsConfig(): ProjectsConfig {
     return { activeProject: '', projects: [] }
   }
   const raw = readFileSync(CONFIG_FILE, 'utf-8')
-  return JSON.parse(raw) as ProjectsConfig
+  const config = JSON.parse(raw) as ProjectsConfig
+
+  // Migrate any projects still pointing to old in-project paths
+  let dirty = false
+  for (const project of config.projects) {
+    const expectedDir = join(CONFIG_DIR, 'data', project.id)
+    if (project.automationDir !== expectedDir) {
+      project.automationDir = expectedDir
+      dirty = true
+    }
+  }
+  if (dirty) {
+    saveProjectsConfig(config)
+  }
+
+  return config
 }
 
 export function saveProjectsConfig(config: ProjectsConfig): void {
