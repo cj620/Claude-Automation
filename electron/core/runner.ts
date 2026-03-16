@@ -141,59 +141,119 @@ async function executeClaudeTask(
   onEvent: EventCallback
 ): Promise<ClaudeResult> {
   const { config } = project
-  const prompt = JSON.stringify(taskContent)
 
+  // Build args — prompt will be piped via stdin to avoid shell quoting issues
   const args = [
-    '-p', prompt,
-    '--output-format', 'json',
+    '-p',
+    '--verbose',
+    '--output-format', 'stream-json',
     '--max-turns', String(config.maxTurns),
-    '--allowedTools', ...config.allowedTools
+    '--allowedTools', `"${config.allowedTools.join(',')}"`
   ]
+
+  // Clean env: remove nesting detection vars
+  const env = { ...process.env }
+  delete env.CLAUDE_CODE_ENTRYPOINT
+  delete env.CLAUDECODE
+
+  console.log('[runner] spawning claude with args:', args.join(' '))
+  console.log('[runner] cwd:', project.projectRoot)
+  console.log('[runner] prompt length:', taskContent.length)
 
   return new Promise<ClaudeResult>((resolve, reject) => {
     const child = spawn('claude', args, {
       cwd: project.projectRoot,
       shell: true,
-      env: {
-        ...process.env,
-        CLAUDE_CODE_ENTRYPOINT: undefined
-      },
+      env,
       timeout: config.taskTimeoutMs
     })
 
     currentChild = child
-    let stdout = ''
     let stderr = ''
+    let buffer = ''
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let finalResult: any = null
+
+    // Pipe prompt via stdin (avoids Windows cmd.exe quoting hell)
+    child.stdin?.write(taskContent)
+    child.stdin?.end()
 
     child.stdout?.on('data', (chunk: Buffer) => {
-      const line = chunk.toString()
-      stdout += line
-      onEvent({ type: 'task-log', taskName, line })
+      const raw = chunk.toString()
+      console.log('[runner] stdout chunk:', raw.slice(0, 200))
+      buffer += raw
+      const lines = buffer.split('\n')
+      // Keep the last incomplete line in buffer
+      buffer = lines.pop() ?? ''
+
+      for (const line of lines) {
+        if (!line.trim()) continue
+        try {
+          const event = JSON.parse(line)
+          if (event.type === 'assistant') {
+            const contents = event.message?.content ?? []
+            for (const c of contents) {
+              if (c.type === 'text' && c.text) {
+                onEvent({ type: 'task-log', taskName, line: c.text })
+              } else if (c.type === 'tool_use') {
+                onEvent({ type: 'task-log', taskName, line: `[tool] ${c.name}: ${JSON.stringify(c.input).slice(0, 200)}` })
+              }
+            }
+          } else if (event.type === 'result') {
+            finalResult = event
+            onEvent({ type: 'task-log', taskName, line: `[result] cost=$${event.cost_usd ?? 0}, turns=${event.num_turns ?? 0}` })
+          }
+        } catch {
+          // Non-JSON line, emit as-is
+          onEvent({ type: 'task-log', taskName, line })
+        }
+      }
     })
 
     child.stderr?.on('data', (chunk: Buffer) => {
-      stderr += chunk.toString()
+      const text = chunk.toString().trim()
+      if (text) {
+        console.log('[runner] stderr:', text.slice(0, 200))
+        stderr += text + '\n'
+        onEvent({ type: 'task-log', taskName, line: `[stderr] ${text}` })
+      }
     })
 
     child.on('close', (code) => {
+      console.log('[runner] process closed with code:', code)
       currentChild = null
-      if (code === 0) {
+      // Process any remaining buffer
+      if (buffer.trim()) {
         try {
-          const result = JSON.parse(stdout) as ClaudeResult
-          resolve(result)
-        } catch {
-          resolve({
-            session_id: 'unknown',
-            result: stdout,
-            usage: { total_cost: 0, turns: 0, input_tokens: 0, output_tokens: 0 }
-          })
-        }
+          const event = JSON.parse(buffer)
+          if (event.type === 'result') finalResult = event
+        } catch { /* ignore */ }
+      }
+
+      if (code === 0 && finalResult) {
+        resolve({
+          session_id: finalResult.session_id ?? 'unknown',
+          result: finalResult.result ?? '',
+          usage: {
+            total_cost: finalResult.cost_usd ?? 0,
+            turns: finalResult.num_turns ?? 0,
+            input_tokens: finalResult.usage?.input_tokens ?? 0,
+            output_tokens: finalResult.usage?.output_tokens ?? 0
+          }
+        })
+      } else if (code === 0) {
+        resolve({
+          session_id: 'unknown',
+          result: 'completed (no result event)',
+          usage: { total_cost: 0, turns: 0, input_tokens: 0, output_tokens: 0 }
+        })
       } else {
-        reject(new Error(`Claude exited with code ${code}: ${stderr || stdout}`))
+        reject(new Error(`Claude exited with code ${code}: ${stderr}`))
       }
     })
 
     child.on('error', (err) => {
+      console.log('[runner] spawn error:', err.message)
       currentChild = null
       reject(err)
     })
