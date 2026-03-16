@@ -92,7 +92,7 @@ export default function AppShell() {
           />
         </Sider>
 
-        <Content style={{ padding: 24, overflow: 'auto' }}>
+        <Content style={{ padding: 24, height: 'calc(100vh - 48px - 28px)', overflow: 'hidden' }}>
           <Outlet />
         </Content>
       </Layout>

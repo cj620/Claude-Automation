@@ -11,16 +11,18 @@ import {
 import { useNavigate } from 'react-router-dom'
 import { useTaskStore } from '../stores/task-store'
 import { useRunnerStore } from '../stores/runner-store'
+import { useProjectStore } from '../stores/project-store'
 import { PageHeader, StatCard, TaskCard, EmptyState } from '../ai/components'
 
 export default function Dashboard(): React.ReactElement {
   const navigate = useNavigate()
   const { tasks, fetchTasks } = useTaskStore()
   const { start, isRunning } = useRunnerStore()
+  const { activeProject } = useProjectStore()
 
   useEffect(() => {
     fetchTasks()
-  }, [])
+  }, [activeProject])
 
   const counts = {
     pending: tasks.filter((t) => t.status === 'pending').length,

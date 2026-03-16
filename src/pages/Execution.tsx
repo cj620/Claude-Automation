@@ -3,17 +3,19 @@ import { Button, List, Typography, Progress, Card } from 'antd'
 import { PlayCircleOutlined, StopOutlined, ClearOutlined } from '@ant-design/icons'
 import { useRunnerStore } from '../stores/runner-store'
 import { useTaskStore } from '../stores/task-store'
+import { useProjectStore } from '../stores/project-store'
 import { PageHeader, LogViewer, StatusBadge, EmptyState } from '../ai/components'
 import { MasterDetail } from '../ai/layouts'
 
 export default function Execution(): React.ReactElement {
   const { isRunning, logs, currentTask, start, stop, clearLogs } = useRunnerStore()
   const { tasks, fetchTasks } = useTaskStore()
+  const { activeProject } = useProjectStore()
   const [selectedTask, setSelectedTask] = useState<string | null>(null)
 
   useEffect(() => {
     fetchTasks()
-  }, [])
+  }, [activeProject])
 
   const pendingCount = tasks.filter((t) => t.status === 'pending').length
   const doneCount = tasks.filter((t) => t.status === 'done').length

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { List, Tag, Space, Spin } from 'antd'
 import { FileTextOutlined } from '@ant-design/icons'
+import { useProjectStore } from '../stores/project-store'
 import { PageHeader, MarkdownRenderer, EmptyState } from '../ai/components'
 import { MasterDetail } from '../ai/layouts'
 
@@ -12,6 +13,7 @@ interface ReportSummary {
 }
 
 export default function Reports(): React.ReactElement {
+  const { activeProject } = useProjectStore()
   const [reports, setReports] = useState<ReportSummary[]>([])
   const [selectedDate, setSelectedDate] = useState<string | null>(null)
   const [content, setContent] = useState<string>('')
@@ -23,7 +25,7 @@ export default function Reports(): React.ReactElement {
       setReports(list)
       if (list.length > 0) setSelectedDate(list[0].date)
     })
-  }, [])
+  }, [activeProject])
 
   useEffect(() => {
     if (!selectedDate) return

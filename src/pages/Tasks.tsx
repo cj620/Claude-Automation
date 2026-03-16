@@ -3,6 +3,7 @@ import { Button } from 'antd'
 import { PlusOutlined } from '@ant-design/icons'
 import { useNavigate } from 'react-router-dom'
 import { useTaskStore } from '../stores/task-store'
+import { useProjectStore } from '../stores/project-store'
 import { PageHeader } from '../ai/components'
 import { KanbanBoard } from '../ai/patterns'
 
@@ -16,10 +17,11 @@ const COLUMNS = [
 export default function Tasks(): React.ReactElement {
   const navigate = useNavigate()
   const { tasks, fetchTasks, deleteTask, retryTask } = useTaskStore()
+  const { activeProject } = useProjectStore()
 
   useEffect(() => {
     fetchTasks()
-  }, [])
+  }, [activeProject])
 
   return (
     <div>

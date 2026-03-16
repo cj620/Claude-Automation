@@ -1,11 +1,10 @@
 import { useState, useMemo, useEffect } from 'react'
-import { Form, Input, Button, Card, message } from 'antd'
-import { SaveOutlined, PlayCircleOutlined } from '@ant-design/icons'
+import { Form, Input, Button, Card, message, Tabs, Space } from 'antd'
+import { SaveOutlined, PlayCircleOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useTaskStore } from '../stores/task-store'
 import { useRunnerStore } from '../stores/runner-store'
-import { PageHeader, MarkdownRenderer } from '../ai/components'
-import { SplitPane } from '../ai/layouts'
+import { MarkdownRenderer } from '../ai/components'
 
 interface FormValues {
   title: string
@@ -32,6 +31,7 @@ export default function TaskEditor(): React.ReactElement {
   const { tasks, fetchTasks, createTask, updateTask } = useTaskStore()
   const { start } = useRunnerStore()
   const [formValues, setFormValues] = useState<FormValues>(INITIAL_VALUES)
+  const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit')
 
   const isEdit = !!id
 
@@ -110,61 +110,73 @@ export default function TaskEditor(): React.ReactElement {
   }
 
   return (
-    <div>
-      <PageHeader
-        title={isEdit ? '编辑任务' : '新建任务'}
-        actions={
-          <>
-            <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>
-              保存
-            </Button>
-            <Button icon={<PlayCircleOutlined />} onClick={handleSaveAndRun}>
-              保存并执行
-            </Button>
-            <Button onClick={() => navigate('/tasks')}>取消</Button>
-          </>
-        }
-      />
+    <div style={{ height: '100%', overflow: 'auto', padding: 24 }}>
+      {/* 操作栏 */}
+      <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h2 style={{ margin: 0 }}>{isEdit ? '编辑任务' : '新建任务'}</h2>
+        <Space>
+          <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>
+            保存
+          </Button>
+          <Button icon={<PlayCircleOutlined />} onClick={handleSaveAndRun}>
+            保存并执行
+          </Button>
+          <Button onClick={() => navigate('/tasks')}>取消</Button>
+        </Space>
+      </div>
 
-      <SplitPane
-        left={
-          <Card>
-            <Form
-              form={form}
-              layout="vertical"
-              initialValues={INITIAL_VALUES}
-              onValuesChange={(_, all) => setFormValues(all)}
-            >
-              <Form.Item name="title" label="标题" rules={[{ required: true, message: '请输入任务标题' }]}>
-                <Input placeholder="例如：补全用户模块的单元测试" />
-              </Form.Item>
-              <Form.Item name="background" label="背景">
-                <Input.TextArea rows={3} placeholder="描述任务的背景和上下文" />
-              </Form.Item>
-              <Form.Item
-                name="goals"
-                label="目标（每行一条）"
-                rules={[{ required: true, message: '请输入至少一个目标' }]}
-              >
-                <Input.TextArea rows={4} placeholder={'为 UserService 添加单元测试\n覆盖率达到 80%'} />
-              </Form.Item>
-              <Form.Item name="constraints" label="约束（每行一条）">
-                <Input.TextArea rows={3} placeholder={'不修改现有接口\n使用 Jest 测试框架'} />
-              </Form.Item>
-              <Form.Item name="files" label="涉及文件（每行一条）">
-                <Input.TextArea rows={3} placeholder={'src/services/user.ts\ntests/services/user.test.ts'} />
-              </Form.Item>
-              <Form.Item name="verification" label="验证方式（每行一条）">
-                <Input.TextArea rows={3} placeholder={'npm test 全部通过\nnpx tsc --noEmit 无报错'} />
-              </Form.Item>
-            </Form>
-          </Card>
-        }
-        right={
-          <Card title="Markdown 预览" styles={{ body: { maxHeight: 'calc(100vh - 200px)', overflow: 'auto' } }}>
-            <MarkdownRenderer content={markdownPreview} />
-          </Card>
-        }
+      {/* Tab 切换 */}
+      <Tabs
+        activeKey={activeTab}
+        onChange={(key) => setActiveTab(key as 'edit' | 'preview')}
+        items={[
+          {
+            key: 'edit',
+            label: <span><EditOutlined /> 表单编辑</span>,
+            children: (
+              <Card>
+                <Form
+                  form={form}
+                  layout="vertical"
+                  initialValues={INITIAL_VALUES}
+                  onValuesChange={(_, all) => setFormValues(all)}
+                >
+                  <Form.Item name="title" label="标题" rules={[{ required: true, message: '请输入任务标题' }]}>
+                    <Input placeholder="例如：补全用户模块的单元测试" />
+                  </Form.Item>
+                  <Form.Item name="background" label="背景">
+                    <Input.TextArea rows={3} placeholder="描述任务的背景和上下文" />
+                  </Form.Item>
+                  <Form.Item
+                    name="goals"
+                    label="目标（每行一条）"
+                    rules={[{ required: true, message: '请输入至少一个目标' }]}
+                  >
+                    <Input.TextArea rows={4} placeholder={'为 UserService 添加单元测试\n覆盖率达到 80%'} />
+                  </Form.Item>
+                  <Form.Item name="constraints" label="约束（每行一条）">
+                    <Input.TextArea rows={3} placeholder={'不修改现有接口\n使用 Jest 测试框架'} />
+                  </Form.Item>
+                  <Form.Item name="files" label="涉及文件（每行一条）">
+                    <Input.TextArea rows={3} placeholder={'src/services/user.ts\ntests/services/user.test.ts'} />
+                  </Form.Item>
+                  <Form.Item name="verification" label="验证方式（每行一条）">
+                    <Input.TextArea rows={3} placeholder={'npm test 全部通过\nnpx tsc --noEmit 无报错'} />
+                  </Form.Item>
+                </Form>
+              </Card>
+            ),
+          },
+          {
+            key: 'preview',
+            label: <span><EyeOutlined /> Markdown 预览</span>,
+            children: (
+              <Card>
+                <MarkdownRenderer content={markdownPreview} />
+              </Card>
+            ),
+          },
+        ]}
       />
     </div>
   )
