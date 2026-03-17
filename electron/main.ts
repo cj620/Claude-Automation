@@ -1,4 +1,4 @@
-import { app, BrowserWindow, shell, dialog } from "electron";
+import { app, BrowserWindow, shell, dialog, powerMonitor } from "electron";
 import { join } from "path";
 import { execSync } from "child_process";
 import { is } from "@electron-toolkit/utils";
@@ -6,6 +6,8 @@ import { registerProjectsIpc } from "./ipc/projects";
 import { registerTasksIpc } from "./ipc/tasks";
 import { registerRunnerIpc } from "./ipc/runner";
 import { registerReportsIpc } from "./ipc/reports";
+import { registerSchedulerIpc } from "./ipc/scheduler";
+import { startScheduler, recalculateAllTimers } from "./core/scheduler";
 import { getRunnerStatus, stopRunner } from "./core/runner";
 
 let mainWindow: BrowserWindow | null = null;
@@ -74,6 +76,12 @@ app.whenReady().then(() => {
   registerReportsIpc();
   createWindow();
   registerRunnerIpc(() => mainWindow);
+  registerSchedulerIpc();
+  startScheduler(() => mainWindow);
+
+  powerMonitor.on("resume", () => {
+    recalculateAllTimers();
+  });
 
   app.on("activate", () => {
     if (BrowserWindow.getAllWindows().length === 0) createWindow();

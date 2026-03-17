@@ -27,6 +27,12 @@ const api = {
     list: (): Promise<unknown[]> => ipcRenderer.invoke('reports:list'),
     get: (date: string): Promise<unknown> => ipcRenderer.invoke('reports:get', date)
   },
+  scheduler: {
+    list: (): Promise<unknown[]> => ipcRenderer.invoke('scheduler:list'),
+    add: (name: string, preset: unknown): Promise<unknown> => ipcRenderer.invoke('scheduler:add', name, preset),
+    remove: (id: string): Promise<void> => ipcRenderer.invoke('scheduler:remove', id),
+    toggle: (id: string, enabled: boolean): Promise<unknown> => ipcRenderer.invoke('scheduler:toggle', id, enabled),
+  },
   on: (channel: string, callback: (...args: unknown[]) => void): (() => void) => {
     const subscription = (_event: Electron.IpcRendererEvent, ...args: unknown[]): void => callback(...args)
     ipcRenderer.on(channel, subscription)
