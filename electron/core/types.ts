@@ -1,6 +1,7 @@
 export interface ProjectsConfig {
   activeProject: string
   projects: Project[]
+  schedules: Schedule[]
 }
 
 export interface Project {
@@ -80,3 +81,19 @@ export type RunnerEvent =
   | { type: 'task-done'; taskName: string; result: TaskExecutionResult }
   | { type: 'task-failed'; taskName: string; error: string }
   | { type: 'all-done'; results: TaskExecutionResult[] }
+
+export type SchedulePreset =
+  | { type: 'daily'; hour: number; minute: number }
+  | { type: 'interval'; hours: number }
+  | { type: 'weekdays'; hour: number; minute: number }
+  | { type: 'custom'; days: number[]; hour: number; minute: number }
+
+export interface Schedule {
+  id: string
+  name: string
+  preset: SchedulePreset
+  enabled: boolean
+  createdAt: string
+  lastRunAt?: string
+  nextRunAt?: string
+}
