@@ -13,7 +13,10 @@ export function registerSchedulerIpc(): void {
   })
 
   ipcMain.handle('scheduler:add', (_e, name: string, preset: SchedulePreset) => {
-    return addSchedule(name, preset)
+    console.log('[scheduler-ipc] add:', name, JSON.stringify(preset))
+    const result = addSchedule(name, preset)
+    console.log('[scheduler-ipc] add result:', result.id)
+    return result
   })
 
   ipcMain.handle('scheduler:remove', (_e, id: string) => {

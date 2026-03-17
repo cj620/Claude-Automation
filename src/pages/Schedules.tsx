@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Button, Switch, Select, TimePicker, InputNumber, Checkbox, Card, List, Popconfirm, Space, Typography } from 'antd'
+import { Button, Switch, Select, TimePicker, InputNumber, Checkbox, Card, List, Popconfirm, Space, Typography, message } from 'antd'
 import { PlusOutlined, DeleteOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import { useSchedulerStore } from '../stores/scheduler-store'
@@ -56,6 +56,7 @@ export default function Schedules(): React.ReactElement {
   const [time, setTime] = useState<dayjs.Dayjs>(dayjs().hour(9).minute(0))
   const [intervalHours, setIntervalHours] = useState(4)
   const [selectedDays, setSelectedDays] = useState<number[]>([1, 2, 3, 4, 5])
+  const [adding, setAdding] = useState(false)
 
   useEffect(() => {
     fetchSchedules()
@@ -86,8 +87,17 @@ export default function Schedules(): React.ReactElement {
         return
     }
 
-    await addSchedule(name, preset as never)
-    setShowForm(false)
+    setAdding(true)
+    try {
+      await addSchedule(name, preset as never)
+      message.success('定时计划已添加')
+      setShowForm(false)
+    } catch (err) {
+      console.error('添加定时计划失败:', err)
+      message.error(`添加失败: ${err instanceof Error ? err.message : String(err)}`)
+    } finally {
+      setAdding(false)
+    }
   }
 
   const enabledCount = schedules.filter(s => s.enabled).length
@@ -152,7 +162,7 @@ export default function Schedules(): React.ReactElement {
             )}
 
             <Space>
-              <Button type="primary" size="small" onClick={handleAdd}>
+              <Button type="primary" size="small" onClick={handleAdd} loading={adding}>
                 确认添加
               </Button>
               <Button size="small" onClick={() => setShowForm(false)}>

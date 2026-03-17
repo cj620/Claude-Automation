@@ -33,25 +33,45 @@ export const useSchedulerStore = create<SchedulerStore>((set) => ({
 
   fetchSchedules: async () => {
     set({ loading: true })
-    const schedules = await window.api.scheduler.list() as Schedule[]
-    set({ schedules, loading: false })
+    try {
+      const schedules = await window.api.scheduler.list() as Schedule[]
+      set({ schedules, loading: false })
+    } catch (err) {
+      console.error('[scheduler-store] fetchSchedules failed:', err)
+      set({ loading: false })
+    }
   },
 
   addSchedule: async (name, preset) => {
-    await window.api.scheduler.add(name, preset)
-    const schedules = await window.api.scheduler.list() as Schedule[]
-    set({ schedules })
+    try {
+      await window.api.scheduler.add(name, preset)
+      const schedules = await window.api.scheduler.list() as Schedule[]
+      set({ schedules })
+    } catch (err) {
+      console.error('[scheduler-store] addSchedule failed:', err)
+      throw err
+    }
   },
 
   removeSchedule: async (id) => {
-    await window.api.scheduler.remove(id)
-    const schedules = await window.api.scheduler.list() as Schedule[]
-    set({ schedules })
+    try {
+      await window.api.scheduler.remove(id)
+      const schedules = await window.api.scheduler.list() as Schedule[]
+      set({ schedules })
+    } catch (err) {
+      console.error('[scheduler-store] removeSchedule failed:', err)
+      throw err
+    }
   },
 
   toggleSchedule: async (id, enabled) => {
-    await window.api.scheduler.toggle(id, enabled)
-    const schedules = await window.api.scheduler.list() as Schedule[]
-    set({ schedules })
+    try {
+      await window.api.scheduler.toggle(id, enabled)
+      const schedules = await window.api.scheduler.list() as Schedule[]
+      set({ schedules })
+    } catch (err) {
+      console.error('[scheduler-store] toggleSchedule failed:', err)
+      throw err
+    }
   }
 }))

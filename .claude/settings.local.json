@@ -7,7 +7,10 @@
       "Bash(npm run:*)",
       "WebFetch(domain:minimax-algeng-chat-tts.oss-cn-wulanchabu.aliyuncs.com)",
       "Bash(npm install:*)",
-      "Bash(ls \"c:\\\\Users\\\\Administrator\\\\Desktop\\\\AI\\\\ai-automation\\\\docs\\\\plans\"\" 2>/dev/null || echo \"no plans dir \")"
+      "Bash(ls \"c:\\\\Users\\\\Administrator\\\\Desktop\\\\AI\\\\ai-automation\\\\docs\\\\plans\"\" 2>/dev/null || echo \"no plans dir \")",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(tasklist)"
     ]
   }
 }
