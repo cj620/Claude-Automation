@@ -1,6 +1,6 @@
 import { ipcMain } from 'electron'
 import { getActiveProject } from '../core/config'
-import { listTasks, createTask, updateTask, deleteTask, retryTask } from '../core/task-manager'
+import { listTasks, createTask, updateTask, deleteTask, retryTask, duplicateTask } from '../core/task-manager'
 import type { TaskDraft, TaskStatus } from '../core/types'
 
 export function registerTasksIpc(): void {
@@ -28,5 +28,9 @@ export function registerTasksIpc(): void {
 
   ipcMain.handle('tasks:retry', (_event, id: string) => {
     return retryTask(getAutomationDir(), id)
+  })
+
+  ipcMain.handle('tasks:duplicate', (_event, id: string) => {
+    return duplicateTask(getAutomationDir(), id)
   })
 }

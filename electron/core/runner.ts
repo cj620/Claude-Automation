@@ -156,6 +156,12 @@ async function executeClaudeTask(
   delete env.CLAUDE_CODE_ENTRYPOINT
   delete env.CLAUDECODE
 
+  // 确保 PATH 包含 npm 全局模块路径 (Windows)
+  const npmGlobalPath = 'C:\\Program Files\\nodejs\\node_global'
+  if (env.PATH && !env.PATH.includes(npmGlobalPath)) {
+    env.PATH = npmGlobalPath + ';' + env.PATH
+  }
+
   console.log('[runner] spawning claude with args:', args.join(' '))
   console.log('[runner] cwd:', project.projectRoot)
   console.log('[runner] prompt length:', taskContent.length)

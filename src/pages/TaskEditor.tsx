@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { Form, Input, Button, Card, message, Tabs, Space } from 'antd'
 import { SaveOutlined, PlayCircleOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useTaskStore } from '../stores/task-store'
 import { useRunnerStore } from '../stores/runner-store'
 import { MarkdownRenderer } from '../ai/components'
@@ -90,6 +90,8 @@ function parseContentToFormValues(content: string): Partial<FormValues> {
 export default function TaskEditor(): React.ReactElement {
   const navigate = useNavigate()
   const { id } = useParams<{ id: string }>()
+  const [searchParams] = useSearchParams()
+  const sourceId = searchParams.get('source')
   const [form] = Form.useForm<FormValues>()
   const { fetchTasks, createTask, updateTask } = useTaskStore()
   const { start } = useRunnerStore()
@@ -97,6 +99,7 @@ export default function TaskEditor(): React.ReactElement {
   const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit')
 
   const isEdit = !!id
+  const isDuplicate = !!sourceId
 
   useEffect(() => {
     if (isEdit) {
@@ -118,8 +121,28 @@ export default function TaskEditor(): React.ReactElement {
           }))
         }
       })
+    } else if (isDuplicate) {
+      // 从源任务复制：加载源任务内容并预填充表单
+      fetchTasks().then(() => {
+        const currentTasks = useTaskStore.getState().tasks
+        const sourceTask = currentTasks.find((t) => t.id === sourceId)
+        if (sourceTask) {
+          const parsedValues = parseContentToFormValues(sourceTask.content || '')
+          const newTitle = sourceTask.name + '（副本）'
+          const filledValues = {
+            title: newTitle,
+            background: parsedValues.background || '',
+            goals: parsedValues.goals || '',
+            constraints: parsedValues.constraints || '',
+            files: parsedValues.files || '',
+            verification: parsedValues.verification || '',
+          }
+          form.setFieldsValue(filledValues)
+          setFormValues(filledValues)
+        }
+      })
     }
-  }, [id])
+  }, [id, sourceId])
 
   const markdownPreview = useMemo(() => {
     const v = formValues
@@ -181,7 +204,7 @@ export default function TaskEditor(): React.ReactElement {
     <div style={{ height: '100%', overflow: 'auto', padding: 24 }}>
       {/* 操作栏 */}
       <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2 style={{ margin: 0 }}>{isEdit ? '编辑任务' : '新建任务'}</h2>
+        <h2 style={{ margin: 0 }}>{isEdit ? '编辑任务' : isDuplicate ? '复制任务' : '新建任务'}</h2>
         <Space>
           <Button type="primary" icon={<SaveOutlined />} onClick={handleSave}>
             保存

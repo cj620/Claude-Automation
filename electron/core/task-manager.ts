@@ -92,6 +92,28 @@ export function retryTask(automationDir: string, id: string): Task {
   return readTaskFile(filePath, 'pending')
 }
 
+// 复制已完成的任务，生成新任务
+export function duplicateTask(automationDir: string, id: string): Task {
+  // 读取原任务内容
+  const srcPath = join(automationDir, 'tasks', 'done', `${id}.md`)
+  if (!existsSync(srcPath)) {
+    throw new Error(`Task ${id} not found in done status`)
+  }
+  const content = readFileSync(srcPath, 'utf-8')
+
+  // 生成新的文件名和任务名
+  const timestamp = Date.now()
+  const newId = `${id}-${timestamp}`
+  const newFileName = `${newId}.md`
+  const destPath = join(automationDir, 'tasks', 'pending', newFileName)
+
+  // 在内容中修改任务名称，添加"（副本）"标记
+  const newContent = content.replace(/^#\s+(?:任务：|Task:\s*)(.+)$/m, '# 任务：$1（副本）')
+
+  writeFileSync(destPath, newContent, 'utf-8')
+  return readTaskFile(destPath, 'pending')
+}
+
 function renderTaskMarkdown(draft: TaskDraft): string {
   const lines: string[] = []
   lines.push(`# 任务：${draft.title}`)

@@ -14,7 +14,8 @@ const api = {
     create: (draft: unknown): Promise<unknown> => ipcRenderer.invoke('tasks:create', draft),
     update: (id: string, content: string): Promise<unknown> => ipcRenderer.invoke('tasks:update', id, content),
     delete: (id: string): Promise<void> => ipcRenderer.invoke('tasks:delete', id),
-    retry: (id: string): Promise<unknown> => ipcRenderer.invoke('tasks:retry', id)
+    retry: (id: string): Promise<unknown> => ipcRenderer.invoke('tasks:retry', id),
+    duplicate: (id: string): Promise<unknown> => ipcRenderer.invoke('tasks:duplicate', id)
   },
   runner: {
     start: (): Promise<void> => ipcRenderer.invoke('runner:start'),

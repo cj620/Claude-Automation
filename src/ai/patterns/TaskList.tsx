@@ -1,5 +1,5 @@
 import { Table, Button, Space, Popconfirm } from 'antd'
-import { EditOutlined, DeleteOutlined, ReloadOutlined } from '@ant-design/icons'
+import { EditOutlined, DeleteOutlined, ReloadOutlined, CopyOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import StatusBadge from '../components/StatusBadge'
 import EmptyState from '../components/EmptyState'
@@ -17,9 +17,10 @@ interface TaskListProps {
   onEdit?: (id: string) => void
   onDelete?: (id: string) => void
   onRetry?: (id: string) => void
+  onDuplicate?: (id: string) => void
 }
 
-export default function TaskList({ tasks, onEdit, onDelete, onRetry }: TaskListProps) {
+export default function TaskList({ tasks, onEdit, onDelete, onRetry, onDuplicate }: TaskListProps) {
   const columns = [
     {
       title: '任务名称',
@@ -48,7 +49,7 @@ export default function TaskList({ tasks, onEdit, onDelete, onRetry }: TaskListP
     {
       title: '操作',
       key: 'actions',
-      width: 150,
+      width: 180,
       render: (_: unknown, record: Task) => (
         <Space size="small">
           <Button
@@ -57,12 +58,22 @@ export default function TaskList({ tasks, onEdit, onDelete, onRetry }: TaskListP
             icon={<EditOutlined />}
             onClick={() => onEdit?.(record.id)}
           />
-          {(record.status === 'failed' || record.status === 'done') && (
+          {record.status === 'failed' && (
             <Button
               type="text"
               size="small"
               icon={<ReloadOutlined />}
               onClick={() => onRetry?.(record.id)}
+              title="重试"
+            />
+          )}
+          {record.status === 'done' && (
+            <Button
+              type="text"
+              size="small"
+              icon={<CopyOutlined />}
+              onClick={() => onDuplicate?.(record.id)}
+              title="再次执行"
             />
           )}
           <Popconfirm

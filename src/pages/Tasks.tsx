@@ -64,6 +64,7 @@ export default function Tasks(): React.ReactElement {
         onEdit={(id) => navigate(`/tasks/${id}/edit`)}
         onDelete={(id) => deleteTask(id)}
         onRetry={(id) => retryTask(id)}
+        onDuplicate={(id) => navigate(`/tasks/new?source=${id}`)}
       />
     </div>
   )

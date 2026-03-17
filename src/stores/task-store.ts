@@ -18,6 +18,7 @@ interface TaskStore {
   updateTask: (id: string, content: string) => Promise<void>
   deleteTask: (id: string) => Promise<void>
   retryTask: (id: string) => Promise<void>
+  duplicateTask: (id: string) => Promise<void>
 }
 
 export const useTaskStore = create<TaskStore>((set) => ({
@@ -50,6 +51,12 @@ export const useTaskStore = create<TaskStore>((set) => ({
 
   retryTask: async (id) => {
     await window.api.tasks.retry(id)
+    const tasks = await window.api.tasks.list() as Task[]
+    set({ tasks })
+  },
+
+  duplicateTask: async (id) => {
+    await window.api.tasks.duplicate(id)
     const tasks = await window.api.tasks.list() as Task[]
     set({ tasks })
   }
