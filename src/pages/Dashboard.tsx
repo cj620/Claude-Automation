@@ -59,7 +59,7 @@ export default function Dashboard(): React.ReactElement {
         }
       />
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 16, marginBottom: 24 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: 16, marginBottom: 24 }}>
         <StatCard title="待执行" value={counts.pending} icon={<ClockCircleOutlined />} status="pending" />
         <StatCard title="执行中" value={counts.running} icon={<SyncOutlined />} status="running" />
         <StatCard title="已完成" value={counts.done} icon={<CheckCircleOutlined />} status="done" />
