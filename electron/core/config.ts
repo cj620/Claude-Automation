@@ -17,7 +17,8 @@ export const DEFAULT_RUNNER_CONFIG: RunnerConfig = {
     'Read', 'Edit', 'Write', 'Glob', 'Grep',
     'Bash(git diff *)', 'Bash(git add *)', 'Bash(git status)',
     'Bash(npx tsc --noEmit *)'
-  ]
+  ],
+  executionMode: 'branch'  // 默认使用分支模式
 }
 
 export function loadProjectsConfig(): ProjectsConfig {
@@ -90,4 +91,15 @@ export function setActiveProject(id: string): void {
   }
   config.activeProject = id
   saveProjectsConfig(config)
+}
+
+export function updateProjectConfig(id: string, updates: Partial<RunnerConfig>): Project {
+  const config = loadProjectsConfig()
+  const project = config.projects.find(p => p.id === id)
+  if (!project) {
+    throw new Error(`Project ${id} not found`)
+  }
+  project.config = { ...project.config, ...updates }
+  saveProjectsConfig(config)
+  return project
 }

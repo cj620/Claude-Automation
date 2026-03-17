@@ -18,6 +18,7 @@ export interface RunnerConfig {
   sleepBetweenTasksMs: number
   retryDelayMs: number
   allowedTools: string[]
+  executionMode: 'branch' | 'direct'  // 'branch': 创建分支修改, 'direct': 直接在当前分支修改
 }
 
 export type TaskStatus = 'pending' | 'running' | 'done' | 'failed'
@@ -30,6 +31,7 @@ export interface Task {
   filePath: string
   createdAt: string
   updatedAt: string
+  executionMode?: 'branch' | 'direct'
 }
 
 export interface TaskDraft {
@@ -39,6 +41,7 @@ export interface TaskDraft {
   constraints: string[]
   files: string[]
   verification: string[]
+  executionMode?: 'branch' | 'direct'
 }
 
 export interface ClaudeResult {

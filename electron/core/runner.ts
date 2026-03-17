@@ -48,15 +48,20 @@ export async function runAllTasks(project: Project, onEvent: EventCallback): Pro
       const taskName = task.id
       onEvent({ type: 'task-start', taskName })
 
+      // 从任务属性获取执行模式，如果未设置则使用项目配置作为回退
+      const useBranchMode = task.executionMode !== 'direct'
+
       const startTime = Date.now()
-      const branch = `ai/${taskName}`
+      const branch = useBranchMode ? `ai/${taskName}` : originalBranch
 
       try {
-        // If branch already exists (from a previous failed run), switch to it; otherwise create new
-        try {
-          execSync(`git checkout -b ${branch}`, { cwd: project.projectRoot, encoding: 'utf-8' })
-        } catch {
-          execSync(`git checkout ${branch}`, { cwd: project.projectRoot, encoding: 'utf-8' })
+        // 分支模式：创建并切换到新分支
+        if (useBranchMode) {
+          try {
+            execSync(`git checkout -b ${branch}`, { cwd: project.projectRoot, encoding: 'utf-8' })
+          } catch {
+            execSync(`git checkout ${branch}`, { cwd: project.projectRoot, encoding: 'utf-8' })
+          }
         }
 
         moveTask(project.automationDir, taskName, 'pending', 'running')
@@ -92,10 +97,13 @@ export async function runAllTasks(project: Project, onEvent: EventCallback): Pro
       } catch (err) {
         const error = err instanceof Error ? err.message : String(err)
 
-        try {
-          execSync('git checkout -- .', { cwd: project.projectRoot })
-          execSync('git clean -fd', { cwd: project.projectRoot })
-        } catch { /* ignore cleanup errors */ }
+        // 分支模式：回滚未提交的更改
+        if (useBranchMode) {
+          try {
+            execSync('git checkout -- .', { cwd: project.projectRoot })
+            execSync('git clean -fd', { cwd: project.projectRoot })
+          } catch { /* ignore cleanup errors */ }
+        }
 
         try {
           moveTask(project.automationDir, taskName, 'running', 'failed')
@@ -112,12 +120,15 @@ export async function runAllTasks(project: Project, onEvent: EventCallback): Pro
         onEvent({ type: 'task-failed', taskName, error })
       }
 
-      try {
-        execSync(`git checkout ${originalBranch}`, {
-          cwd: project.projectRoot,
-          encoding: 'utf-8'
-        })
-      } catch { /* ignore */ }
+      // 分支模式：执行完切换回原分支
+      if (useBranchMode) {
+        try {
+          execSync(`git checkout ${originalBranch}`, {
+            cwd: project.projectRoot,
+            encoding: 'utf-8'
+          })
+        } catch { /* ignore */ }
+      }
 
       if (!shouldStop && tasks.indexOf(task) < tasks.length - 1) {
         await sleep(project.config.sleepBetweenTasksMs)

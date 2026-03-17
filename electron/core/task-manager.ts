@@ -27,8 +27,19 @@ function readTaskFile(filePath: string, status: TaskStatus): Task {
     content,
     filePath,
     createdAt: stat.birthtime.toISOString(),
-    updatedAt: stat.mtime.toISOString()
+    updatedAt: stat.mtime.toISOString(),
+    executionMode: parseExecutionMode(content)
   }
+}
+
+function parseExecutionMode(content: string): 'branch' | 'direct' | undefined {
+  const match = content.match(/## 执行模式\s*\n([^\n]+)/)
+  if (match) {
+    const mode = match[1].trim().toLowerCase()
+    if (mode === 'direct') return 'direct'
+    if (mode === 'branch') return 'branch'
+  }
+  return undefined
 }
 
 export function listTasks(automationDir: string, statusFilter?: TaskStatus): Task[] {
@@ -140,6 +151,9 @@ function renderTaskMarkdown(draft: TaskDraft): string {
   for (const v of draft.verification) {
     lines.push(`- ${v}`)
   }
+  lines.push('')
+  lines.push('## 执行模式')
+  lines.push(draft.executionMode || 'branch')
   lines.push('')
   return lines.join('\n')
 }

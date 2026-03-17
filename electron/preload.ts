@@ -7,7 +7,8 @@ const api = {
     add: (projectRoot: string): Promise<unknown> => ipcRenderer.invoke('projects:add', projectRoot),
     remove: (id: string): Promise<void> => ipcRenderer.invoke('projects:remove', id),
     setActive: (id: string): Promise<void> => ipcRenderer.invoke('projects:setActive', id),
-    selectDir: (): Promise<string | null> => ipcRenderer.invoke('projects:selectDir')
+    selectDir: (): Promise<string | null> => ipcRenderer.invoke('projects:selectDir'),
+    updateConfig: (id: string, config: unknown): Promise<unknown> => ipcRenderer.invoke('projects:updateConfig', id, config)
   },
   tasks: {
     list: (status?: string): Promise<unknown[]> => ipcRenderer.invoke('tasks:list', status),

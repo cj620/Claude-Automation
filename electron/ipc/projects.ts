@@ -7,8 +7,10 @@ import {
   addProject,
   removeProject,
   setActiveProject,
-  getActiveProject
+  getActiveProject,
+  updateProjectConfig
 } from '../core/config'
+import type { RunnerConfig } from '../core/types'
 
 export function registerProjectsIpc(): void {
   ipcMain.handle('projects:list', () => {
@@ -43,6 +45,10 @@ export function registerProjectsIpc(): void {
 
   ipcMain.handle('projects:setActive', (_event, id: string) => {
     setActiveProject(id)
+  })
+
+  ipcMain.handle('projects:updateConfig', (_event, id: string, config: Partial<RunnerConfig>) => {
+    return updateProjectConfig(id, config)
   })
 
   ipcMain.handle('projects:selectDir', async () => {
