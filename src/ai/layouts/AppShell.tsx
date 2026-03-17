@@ -4,6 +4,7 @@ import {
   UnorderedListOutlined,
   PlayCircleOutlined,
   FileTextOutlined,
+  ClockCircleOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
 } from '@ant-design/icons'
@@ -20,6 +21,7 @@ const menuItems = [
   { key: '/', icon: <DashboardOutlined />, label: '概览' },
   { key: '/tasks', icon: <UnorderedListOutlined />, label: '任务' },
   { key: '/execution', icon: <PlayCircleOutlined />, label: '执行' },
+  { key: '/schedules', icon: <ClockCircleOutlined />, label: '定时' },
   { key: '/reports', icon: <FileTextOutlined />, label: '报告' },
 ]
 
