@@ -5,7 +5,8 @@
       "Bash(npx electron-vite:*)",
       "Bash(npx tsc:*)",
       "Bash(npm run:*)",
-      "WebFetch(domain:minimax-algeng-chat-tts.oss-cn-wulanchabu.aliyuncs.com)"
+      "WebFetch(domain:minimax-algeng-chat-tts.oss-cn-wulanchabu.aliyuncs.com)",
+      "Bash(npm install:*)"
     ]
   }
 }

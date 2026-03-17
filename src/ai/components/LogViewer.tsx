@@ -11,9 +11,10 @@ interface LogViewerProps {
   loading?: boolean
   emptyText?: string
   maxHeight?: string
+  style?: React.CSSProperties
 }
 
-export default function LogViewer({ logs, loading, emptyText = '等待执行...', maxHeight = 'calc(100vh - 320px)' }: LogViewerProps) {
+export default function LogViewer({ logs, loading, emptyText = '等待执行...', maxHeight = 'calc(100vh - 320px)', style }: LogViewerProps) {
   const endRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -35,6 +36,7 @@ export default function LogViewer({ logs, loading, emptyText = '等待执行...'
         whiteSpace: 'pre-wrap',
         wordBreak: 'break-all',
         borderRadius: 6,
+        ...style,
       }}
     >
       {logs.length === 0 ? (

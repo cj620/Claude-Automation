@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react'
-import { Button, List, Typography, Progress, Card } from 'antd'
+import { Button, Select, Progress } from 'antd'
 import { PlayCircleOutlined, StopOutlined, ClearOutlined } from '@ant-design/icons'
 import { useRunnerStore } from '../stores/runner-store'
 import { useTaskStore } from '../stores/task-store'
 import { useProjectStore } from '../stores/project-store'
-import { PageHeader, LogViewer, StatusBadge, EmptyState } from '../ai/components'
-import { MasterDetail } from '../ai/layouts'
+import { PageHeader, LogViewer, EmptyState } from '../ai/components'
 
 export default function Execution(): React.ReactElement {
   const { isRunning, logs, currentTask, start, stop, clearLogs } = useRunnerStore()
@@ -25,7 +24,7 @@ export default function Execution(): React.ReactElement {
   const taskNames = [...new Set(logs.map((l) => l.taskName))]
 
   return (
-    <div>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: 0 }}>
       <PageHeader
         title="执行"
         subtitle={isRunning && currentTask ? `正在执行: ${currentTask}` : undefined}
@@ -58,36 +57,32 @@ export default function Execution(): React.ReactElement {
         />
       )}
 
-      <MasterDetail
-        sidebarTitle="任务"
-        sidebarWidth={200}
-        sidebar={
-          taskNames.length === 0 ? (
-            <EmptyState type="no-logs" description="暂无执行记录" />
-          ) : (
-            <List
-              size="small"
-              dataSource={taskNames}
-              renderItem={(name) => (
-                <List.Item
-                  onClick={() => setSelectedTask(selectedTask === name ? null : name)}
-                  style={{
-                    cursor: 'pointer',
-                    background: selectedTask === name ? 'var(--ai-color-glow)' : undefined,
-                    padding: '8px 12px',
-                    borderRadius: 4,
-                    transition: 'background 0.2s',
-                  }}
-                >
-                  <Typography.Text ellipsis>{name}</Typography.Text>
-                </List.Item>
-              )}
-            />
-          )
-        }
-        contentTitle={selectedTask ? `日志: ${selectedTask}` : '全部日志'}
-        content={<LogViewer logs={filteredLogs} loading={isRunning} />}
+      <Select
+        value={selectedTask || 'all'}
+        onChange={(value) => setSelectedTask(value === 'all' ? null : value)}
+        options={[
+          { value: 'all', label: `全部 (${logs.length})` },
+          ...taskNames.map((name) => ({
+            value: name,
+            label: `${name} (${logs.filter((l) => l.taskName === name).length})`,
+          })),
+        ]}
+        style={{ width: 260, marginBottom: 16, minHeight: 32 }}
+        placeholder="筛选任务"
+        showSearch
       />
+
+      <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' }}>
+        {taskNames.length === 0 ? (
+          <EmptyState type="no-logs" description="暂无执行记录" />
+        ) : (
+          <LogViewer
+            logs={filteredLogs}
+            loading={isRunning}
+            style={{ flex: 1, minHeight: 0, maxHeight: 'none' }}
+          />
+        )}
+      </div>
     </div>
   )
 }
