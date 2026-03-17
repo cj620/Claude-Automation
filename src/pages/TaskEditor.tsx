@@ -1,5 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
-import { Form, Input, Button, Card, message, Tabs, Space, Radio } from 'antd'
+import { Form, Input, Button, Card, message, Tabs, Space } from 'antd'
 import { SaveOutlined, PlayCircleOutlined, EditOutlined, EyeOutlined } from '@ant-design/icons'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { useTaskStore } from '../stores/task-store'
@@ -13,7 +13,6 @@ interface FormValues {
   constraints: string
   files: string
   verification: string
-  executionMode: 'branch' | 'direct'
 }
 
 const INITIAL_VALUES: FormValues = {
@@ -23,7 +22,6 @@ const INITIAL_VALUES: FormValues = {
   constraints: '',
   files: '',
   verification: '',
-  executionMode: 'branch',
 }
 
 // 解析 Markdown 内容到表单字段
@@ -86,13 +84,6 @@ function parseContentToFormValues(content: string): Partial<FormValues> {
     result.verification = verification
   }
 
-  // 解析执行模式: ## 执行模式\nxxx
-  const executionModeMatch = content.match(/## 执行模式\s*\n(\w+)/)
-  if (executionModeMatch) {
-    const mode = executionModeMatch[1].trim().toLowerCase()
-    result.executionMode = mode === 'direct' ? 'direct' : 'branch'
-  }
-
   return result
 }
 
@@ -121,14 +112,12 @@ export default function TaskEditor(): React.ReactElement {
           form.setFieldsValue({
             title: task.name,
             ...parsedValues,
-            executionMode: parsedValues.executionMode || 'branch',
           })
           // 同时更新 formValues 状态以刷新预览
           setFormValues((prev) => ({
             ...prev,
             title: task.name,
             ...parsedValues,
-            executionMode: parsedValues.executionMode || 'branch',
           }))
         }
       })
@@ -147,7 +136,6 @@ export default function TaskEditor(): React.ReactElement {
             constraints: parsedValues.constraints || '',
             files: parsedValues.files || '',
             verification: parsedValues.verification || '',
-            executionMode: parsedValues.executionMode || 'branch',
           }
           form.setFieldsValue(filledValues)
           setFormValues(filledValues)
@@ -183,9 +171,6 @@ export default function TaskEditor(): React.ReactElement {
     for (const ver of (v.verification || '').split('\n').filter(Boolean)) {
       lines.push(`- ${ver}`)
     }
-    lines.push('')
-    lines.push('## 执行模式')
-    lines.push(v.executionMode || 'branch')
     return lines.join('\n')
   }, [formValues])
 
@@ -198,7 +183,6 @@ export default function TaskEditor(): React.ReactElement {
       constraints: values.constraints.split('\n').filter(Boolean),
       files: values.files.split('\n').filter(Boolean),
       verification: values.verification.split('\n').filter(Boolean),
-      executionMode: values.executionMode,
     }
 
     if (isEdit) {
@@ -269,15 +253,6 @@ export default function TaskEditor(): React.ReactElement {
                   </Form.Item>
                   <Form.Item name="verification" label="验证方式（每行一条）">
                     <Input.TextArea rows={3} placeholder={'npm test 全部通过\nnpx tsc --noEmit 无报错'} />
-                  </Form.Item>
-                  <Form.Item name="executionMode" label="执行模式">
-                    <Radio.Group optionType="button" buttonStyle="solid">
-                      <Radio.Button value="branch">分支模式</Radio.Button>
-                      <Radio.Button value="direct">直接修改</Radio.Button>
-                    </Radio.Group>
-                    <span style={{ marginLeft: 12, color: '#888', fontSize: 12 }}>
-                      {formValues.executionMode === 'direct' ? '直接在当前分支修改，不创建新分支' : '创建新分支进行修改'}
-                    </span>
                   </Form.Item>
                 </Form>
               </Card>

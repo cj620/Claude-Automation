@@ -31,7 +31,6 @@ export interface Task {
   filePath: string
   createdAt: string
   updatedAt: string
-  executionMode?: 'branch' | 'direct'
 }
 
 export interface TaskDraft {
@@ -41,7 +40,6 @@ export interface TaskDraft {
   constraints: string[]
   files: string[]
   verification: string[]
-  executionMode?: 'branch' | 'direct'
 }
 
 export interface ClaudeResult {
