@@ -2,7 +2,7 @@ import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs'
 import { join } from 'path'
 import { homedir } from 'os'
 import { v4 as uuidv4 } from 'uuid'
-import type { ProjectsConfig, Project, RunnerConfig } from './types'
+import type { ProjectsConfig, Project, RunnerConfig, Schedule } from './types'
 
 const CONFIG_DIR = join(homedir(), '.ai-automation')
 const CONFIG_FILE = join(CONFIG_DIR, 'projects.json')
@@ -23,10 +23,15 @@ export const DEFAULT_RUNNER_CONFIG: RunnerConfig = {
 
 export function loadProjectsConfig(): ProjectsConfig {
   if (!existsSync(CONFIG_FILE)) {
-    return { activeProject: '', projects: [] }
+    return { activeProject: '', projects: [], schedules: [] }
   }
   const raw = readFileSync(CONFIG_FILE, 'utf-8')
   const config = JSON.parse(raw) as ProjectsConfig
+
+  // Migrate: add schedules array if missing (pre-scheduler configs)
+  if (!config.schedules) {
+    config.schedules = []
+  }
 
   // Migrate any projects still pointing to old in-project paths
   let dirty = false
@@ -102,4 +107,15 @@ export function updateProjectConfig(id: string, updates: Partial<RunnerConfig>):
   project.config = { ...project.config, ...updates }
   saveProjectsConfig(config)
   return project
+}
+
+export function loadSchedules(): Schedule[] {
+  const config = loadProjectsConfig()
+  return config.schedules
+}
+
+export function saveSchedules(schedules: Schedule[]): void {
+  const config = loadProjectsConfig()
+  config.schedules = schedules
+  saveProjectsConfig(config)
 }
