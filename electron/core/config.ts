@@ -23,18 +23,34 @@ export const DEFAULT_RUNNER_CONFIG: RunnerConfig = {
 
 export function loadProjectsConfig(): ProjectsConfig {
   if (!existsSync(CONFIG_FILE)) {
-    return { activeProject: '', projects: [], schedules: [] }
+    return { activeProject: '', projects: [] }
   }
   const raw = readFileSync(CONFIG_FILE, 'utf-8')
   const config = JSON.parse(raw) as ProjectsConfig
 
-  // Migrate: add schedules array if missing (pre-scheduler configs)
-  if (!config.schedules) {
-    config.schedules = []
+  let dirty = false
+
+  // Migrate: ensure all projects have schedules array
+  for (const project of config.projects) {
+    if (!project.schedules) {
+      project.schedules = []
+      dirty = true
+    }
+  }
+
+  // Migrate: move global schedules into activeProject (旧版数据迁移)
+  if (config.schedules && config.schedules.length > 0) {
+    const activeProject = config.projects.find(p => p.id === config.activeProject)
+    if (activeProject) {
+      for (const s of config.schedules) {
+        activeProject.schedules.push({ ...s, projectId: activeProject.id })
+      }
+    }
+    config.schedules = undefined
+    dirty = true
   }
 
   // Migrate any projects still pointing to old in-project paths
-  let dirty = false
   for (const project of config.projects) {
     const expectedDir = join(CONFIG_DIR, 'data', project.id)
     if (project.automationDir !== expectedDir) {
@@ -42,6 +58,7 @@ export function loadProjectsConfig(): ProjectsConfig {
       dirty = true
     }
   }
+
   if (dirty) {
     saveProjectsConfig(config)
   }
@@ -70,7 +87,8 @@ export function addProject(projectRoot: string, name: string): Project {
     name,
     projectRoot,
     automationDir: join(CONFIG_DIR, 'data', id),
-    config: { ...DEFAULT_RUNNER_CONFIG }
+    config: { ...DEFAULT_RUNNER_CONFIG },
+    schedules: []
   }
   config.projects.push(project)
   if (!config.activeProject) {
@@ -109,13 +127,27 @@ export function updateProjectConfig(id: string, updates: Partial<RunnerConfig>):
   return project
 }
 
-export function loadSchedules(): Schedule[] {
+export function loadAllSchedules(): Schedule[] {
   const config = loadProjectsConfig()
-  return config.schedules
+  return config.projects.flatMap(p => p.schedules || [])
 }
 
-export function saveSchedules(schedules: Schedule[]): void {
+export function loadSchedulesByProject(projectId: string): Schedule[] {
   const config = loadProjectsConfig()
-  config.schedules = schedules
-  saveProjectsConfig(config)
+  const project = config.projects.find(p => p.id === projectId)
+  return project?.schedules || []
+}
+
+export function saveProjectSchedules(projectId: string, schedules: Schedule[]): void {
+  const config = loadProjectsConfig()
+  const project = config.projects.find(p => p.id === projectId)
+  if (project) {
+    project.schedules = schedules
+    saveProjectsConfig(config)
+  }
+}
+
+export function findProjectById(id: string): Project | null {
+  const config = loadProjectsConfig()
+  return config.projects.find(p => p.id === id) ?? null
 }

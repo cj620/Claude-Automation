@@ -1,6 +1,6 @@
-import { useEffect, useState } from 'react'
-import { Button, Switch, Select, TimePicker, InputNumber, Checkbox, Card, List, Popconfirm, Space, Typography, message } from 'antd'
-import { PlusOutlined, DeleteOutlined } from '@ant-design/icons'
+import { useEffect, useState, useMemo } from 'react'
+import { Button, Switch, Select, TimePicker, InputNumber, Checkbox, Card, List, Popconfirm, Space, Typography, message, Tag } from 'antd'
+import { PlusOutlined, DeleteOutlined, ClockCircleOutlined } from '@ant-design/icons'
 import dayjs from 'dayjs'
 import { useSchedulerStore } from '../stores/scheduler-store'
 import { useProjectStore } from '../stores/project-store'
@@ -49,8 +49,8 @@ function formatTime(iso?: string): string {
 }
 
 export default function Schedules(): React.ReactElement {
-  const { schedules, loading, fetchSchedules, addSchedule, removeSchedule, toggleSchedule } = useSchedulerStore()
-  const { activeProject } = useProjectStore()
+  const { schedules, allSchedules, loading, fetchSchedules, fetchAllSchedules, addSchedule, removeSchedule, toggleSchedule } = useSchedulerStore()
+  const { activeProject, projects } = useProjectStore()
   const [showForm, setShowForm] = useState(false)
   const [presetType, setPresetType] = useState<string>('daily')
   const [time, setTime] = useState<dayjs.Dayjs>(dayjs().hour(9).minute(0))
@@ -59,10 +59,44 @@ export default function Schedules(): React.ReactElement {
   const [adding, setAdding] = useState(false)
 
   useEffect(() => {
-    fetchSchedules()
+    if (activeProject) {
+      fetchSchedules(activeProject.id)
+    }
+    fetchAllSchedules()
   }, [activeProject])
 
+  // 按项目分组的总览数据
+  const projectOverview = useMemo(() => {
+    const projectMap = new Map(projects.map(p => [p.id, p.name]))
+    const grouped = new Map<string, { projectName: string; enabledCount: number; nextRun?: string }>()
+
+    for (const s of allSchedules) {
+      const existing = grouped.get(s.projectId)
+      if (!existing) {
+        grouped.set(s.projectId, {
+          projectName: projectMap.get(s.projectId) || '未知项目',
+          enabledCount: s.enabled ? 1 : 0,
+          nextRun: s.enabled ? s.nextRunAt : undefined
+        })
+      } else {
+        if (s.enabled) existing.enabledCount++
+        if (s.enabled && s.nextRunAt) {
+          if (!existing.nextRun || s.nextRunAt < existing.nextRun) {
+            existing.nextRun = s.nextRunAt
+          }
+        }
+      }
+    }
+
+    return Array.from(grouped.entries()).map(([projectId, data]) => ({
+      projectId,
+      ...data
+    }))
+  }, [allSchedules, projects])
+
   const handleAdd = async (): Promise<void> => {
+    if (!activeProject) return
+
     let preset: unknown
     let name: string
 
@@ -89,7 +123,7 @@ export default function Schedules(): React.ReactElement {
 
     setAdding(true)
     try {
-      await addSchedule(name, preset as never)
+      await addSchedule(activeProject.id, name, preset as never)
       message.success('定时计划已添加')
       setShowForm(false)
     } catch (err) {
@@ -112,11 +146,51 @@ export default function Schedules(): React.ReactElement {
             type="primary"
             icon={<PlusOutlined />}
             onClick={() => setShowForm(!showForm)}
+            disabled={!activeProject}
           >
             添加定时
           </Button>
         }
       />
+
+      {/* 所有项目总览 */}
+      {projectOverview.length > 0 && (
+        <div style={{ marginBottom: 16 }}>
+          <Typography.Text type="secondary" style={{ fontSize: 12, marginBottom: 8, display: 'block' }}>
+            所有项目定时概览
+          </Typography.Text>
+          <Space wrap>
+            {projectOverview.map(item => (
+              <Card
+                key={item.projectId}
+                size="small"
+                style={{
+                  minWidth: 180,
+                  borderColor: item.projectId === activeProject?.id ? '#00E5CC' : undefined
+                }}
+              >
+                <Space direction="vertical" size={2}>
+                  <Space>
+                    <ClockCircleOutlined />
+                    <Typography.Text strong style={{ fontSize: 13 }}>
+                      {item.projectName}
+                    </Typography.Text>
+                    {item.projectId === activeProject?.id && (
+                      <Tag color="cyan" style={{ fontSize: 10, lineHeight: '16px', padding: '0 4px' }}>当前</Tag>
+                    )}
+                  </Space>
+                  <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                    {item.enabledCount} 个计划启用
+                  </Typography.Text>
+                  <Typography.Text type="secondary" style={{ fontSize: 11 }}>
+                    下次: {formatTime(item.nextRun)}
+                  </Typography.Text>
+                </Space>
+              </Card>
+            ))}
+          </Space>
+        </div>
+      )}
 
       {showForm && (
         <Card size="small" style={{ marginBottom: 16 }}>
@@ -177,9 +251,9 @@ export default function Schedules(): React.ReactElement {
         {schedules.length === 0 ? (
           <EmptyState
             type="no-tasks"
-            description="暂无定时计划"
+            description={activeProject ? '当前项目暂无定时计划' : '请先选择一个项目'}
             action={
-              !showForm ? (
+              !showForm && activeProject ? (
                 <Button type="primary" icon={<PlusOutlined />} onClick={() => setShowForm(true)}>
                   添加定时
                 </Button>
@@ -196,13 +270,13 @@ export default function Schedules(): React.ReactElement {
                   <Switch
                     key="toggle"
                     checked={schedule.enabled}
-                    onChange={(checked) => toggleSchedule(schedule.id, checked)}
+                    onChange={(checked) => activeProject && toggleSchedule(activeProject.id, schedule.id, checked)}
                     size="small"
                   />,
                   <Popconfirm
                     key="delete"
                     title="确定删除此定时计划？"
-                    onConfirm={() => removeSchedule(schedule.id)}
+                    onConfirm={() => activeProject && removeSchedule(activeProject.id, schedule.id)}
                   >
                     <Button type="text" danger icon={<DeleteOutlined />} size="small" />
                   </Popconfirm>

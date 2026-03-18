@@ -10,6 +10,7 @@ interface SchedulePreset {
 
 interface Schedule {
   id: string
+  projectId: string
   name: string
   preset: SchedulePreset
   enabled: boolean
@@ -20,21 +21,24 @@ interface Schedule {
 
 interface SchedulerStore {
   schedules: Schedule[]
+  allSchedules: Schedule[]
   loading: boolean
-  fetchSchedules: () => Promise<void>
-  addSchedule: (name: string, preset: SchedulePreset) => Promise<void>
-  removeSchedule: (id: string) => Promise<void>
-  toggleSchedule: (id: string, enabled: boolean) => Promise<void>
+  fetchSchedules: (projectId: string) => Promise<void>
+  fetchAllSchedules: () => Promise<void>
+  addSchedule: (projectId: string, name: string, preset: SchedulePreset) => Promise<void>
+  removeSchedule: (projectId: string, id: string) => Promise<void>
+  toggleSchedule: (projectId: string, id: string, enabled: boolean) => Promise<void>
 }
 
 export const useSchedulerStore = create<SchedulerStore>((set) => ({
   schedules: [],
+  allSchedules: [],
   loading: false,
 
-  fetchSchedules: async () => {
+  fetchSchedules: async (projectId) => {
     set({ loading: true })
     try {
-      const schedules = await window.api.scheduler.list() as Schedule[]
+      const schedules = await window.api.scheduler.list(projectId) as Schedule[]
       set({ schedules, loading: false })
     } catch (err) {
       console.error('[scheduler-store] fetchSchedules failed:', err)
@@ -42,33 +46,45 @@ export const useSchedulerStore = create<SchedulerStore>((set) => ({
     }
   },
 
-  addSchedule: async (name, preset) => {
+  fetchAllSchedules: async () => {
     try {
-      await window.api.scheduler.add(name, preset)
-      const schedules = await window.api.scheduler.list() as Schedule[]
-      set({ schedules })
+      const allSchedules = await window.api.scheduler.listAll() as Schedule[]
+      set({ allSchedules })
+    } catch (err) {
+      console.error('[scheduler-store] fetchAllSchedules failed:', err)
+    }
+  },
+
+  addSchedule: async (projectId, name, preset) => {
+    try {
+      await window.api.scheduler.add(projectId, name, preset)
+      const schedules = await window.api.scheduler.list(projectId) as Schedule[]
+      const allSchedules = await window.api.scheduler.listAll() as Schedule[]
+      set({ schedules, allSchedules })
     } catch (err) {
       console.error('[scheduler-store] addSchedule failed:', err)
       throw err
     }
   },
 
-  removeSchedule: async (id) => {
+  removeSchedule: async (projectId, id) => {
     try {
-      await window.api.scheduler.remove(id)
-      const schedules = await window.api.scheduler.list() as Schedule[]
-      set({ schedules })
+      await window.api.scheduler.remove(projectId, id)
+      const schedules = await window.api.scheduler.list(projectId) as Schedule[]
+      const allSchedules = await window.api.scheduler.listAll() as Schedule[]
+      set({ schedules, allSchedules })
     } catch (err) {
       console.error('[scheduler-store] removeSchedule failed:', err)
       throw err
     }
   },
 
-  toggleSchedule: async (id, enabled) => {
+  toggleSchedule: async (projectId, id, enabled) => {
     try {
-      await window.api.scheduler.toggle(id, enabled)
-      const schedules = await window.api.scheduler.list() as Schedule[]
-      set({ schedules })
+      await window.api.scheduler.toggle(projectId, id, enabled)
+      const schedules = await window.api.scheduler.list(projectId) as Schedule[]
+      const allSchedules = await window.api.scheduler.listAll() as Schedule[]
+      set({ schedules, allSchedules })
     } catch (err) {
       console.error('[scheduler-store] toggleSchedule failed:', err)
       throw err

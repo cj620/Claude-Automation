@@ -1,7 +1,7 @@
 export interface ProjectsConfig {
   activeProject: string
   projects: Project[]
-  schedules: Schedule[]
+  schedules?: Schedule[]     // 已废弃，仅用于旧数据迁移
 }
 
 export interface Project {
@@ -10,6 +10,7 @@ export interface Project {
   projectRoot: string
   automationDir: string
   config: RunnerConfig
+  schedules: Schedule[]
 }
 
 export interface RunnerConfig {
@@ -95,6 +96,7 @@ export type SchedulePreset =
 
 export interface Schedule {
   id: string
+  projectId: string
   name: string
   preset: SchedulePreset
   enabled: boolean
@@ -102,3 +104,8 @@ export interface Schedule {
   lastRunAt?: string
   nextRunAt?: string
 }
+
+export type SchedulerEvent =
+  | { type: 'triggered'; scheduleId: string; scheduleName: string; projectName: string }
+  | { type: 'queued'; scheduleId: string; scheduleName: string; projectName: string }
+  | { type: 'skipped'; scheduleId: string; reason: string }

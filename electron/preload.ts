@@ -28,10 +28,11 @@ const api = {
     get: (date: string): Promise<unknown> => ipcRenderer.invoke('reports:get', date)
   },
   scheduler: {
-    list: (): Promise<unknown[]> => ipcRenderer.invoke('scheduler:list'),
-    add: (name: string, preset: unknown): Promise<unknown> => ipcRenderer.invoke('scheduler:add', name, preset),
-    remove: (id: string): Promise<void> => ipcRenderer.invoke('scheduler:remove', id),
-    toggle: (id: string, enabled: boolean): Promise<unknown> => ipcRenderer.invoke('scheduler:toggle', id, enabled),
+    list: (projectId: string): Promise<unknown[]> => ipcRenderer.invoke('scheduler:list', projectId),
+    listAll: (): Promise<unknown[]> => ipcRenderer.invoke('scheduler:listAll'),
+    add: (projectId: string, name: string, preset: unknown): Promise<unknown> => ipcRenderer.invoke('scheduler:add', projectId, name, preset),
+    remove: (projectId: string, id: string): Promise<void> => ipcRenderer.invoke('scheduler:remove', projectId, id),
+    toggle: (projectId: string, id: string, enabled: boolean): Promise<unknown> => ipcRenderer.invoke('scheduler:toggle', projectId, id, enabled),
   },
   ai: {
     generate: (prompt: string): Promise<void> => ipcRenderer.invoke('ai:generate', prompt),
