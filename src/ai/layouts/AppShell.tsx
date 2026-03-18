@@ -7,6 +7,7 @@ import {
   ClockCircleOutlined,
   MenuFoldOutlined,
   MenuUnfoldOutlined,
+  RobotOutlined,
 } from '@ant-design/icons'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import { useEffect, useState } from 'react'
@@ -20,6 +21,7 @@ const { Header, Sider, Content, Footer } = Layout
 const menuItems = [
   { key: '/', icon: <DashboardOutlined />, label: '概览' },
   { key: '/tasks', icon: <UnorderedListOutlined />, label: '任务' },
+  { key: '/tasks/ai-create', icon: <RobotOutlined />, label: 'AI 创建' },
   { key: '/execution', icon: <PlayCircleOutlined />, label: '执行' },
   { key: '/schedules', icon: <ClockCircleOutlined />, label: '定时' },
   { key: '/reports', icon: <FileTextOutlined />, label: '报告' },

@@ -8,6 +8,7 @@ import TaskEditor from './pages/TaskEditor'
 import Execution from './pages/Execution'
 import Reports from './pages/Reports'
 import Schedules from './pages/Schedules'
+import AITaskCreator from './pages/AITaskCreator'
 
 export default function App(): React.ReactElement {
   return (
@@ -19,6 +20,7 @@ export default function App(): React.ReactElement {
             <Route path="/tasks" element={<Tasks />} />
             <Route path="/tasks/new" element={<TaskEditor />} />
             <Route path="/tasks/:id/edit" element={<TaskEditor />} />
+            <Route path="/tasks/ai-create" element={<AITaskCreator />} />
             <Route path="/execution" element={<Execution />} />
             <Route path="/schedules" element={<Schedules />} />
             <Route path="/reports" element={<Reports />} />

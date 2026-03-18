@@ -75,6 +75,11 @@ export interface ReportDetail extends ReportSummary {
   content: string
 }
 
+export type AIGenerateEvent =
+  | { type: 'progress'; message: string }
+  | { type: 'result'; tasks: TaskDraft[] }
+  | { type: 'error'; error: string }
+
 export type RunnerEvent =
   | { type: 'task-start'; taskName: string }
   | { type: 'task-log'; taskName: string; line: string }

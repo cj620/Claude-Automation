@@ -7,6 +7,7 @@ import { registerTasksIpc } from "./ipc/tasks";
 import { registerRunnerIpc } from "./ipc/runner";
 import { registerReportsIpc } from "./ipc/reports";
 import { registerSchedulerIpc } from "./ipc/scheduler";
+import { registerAIGeneratorIpc } from "./ipc/ai-generator";
 import { startScheduler, recalculateAllTimers } from "./core/scheduler";
 import { getRunnerStatus, stopRunner } from "./core/runner";
 
@@ -76,6 +77,7 @@ app.whenReady().then(() => {
   registerReportsIpc();
   createWindow();
   registerRunnerIpc(() => mainWindow);
+  registerAIGeneratorIpc(() => mainWindow);
   registerSchedulerIpc();
   startScheduler(() => mainWindow);
 

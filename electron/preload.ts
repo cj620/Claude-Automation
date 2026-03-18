@@ -33,6 +33,10 @@ const api = {
     remove: (id: string): Promise<void> => ipcRenderer.invoke('scheduler:remove', id),
     toggle: (id: string, enabled: boolean): Promise<unknown> => ipcRenderer.invoke('scheduler:toggle', id, enabled),
   },
+  ai: {
+    generate: (prompt: string): Promise<void> => ipcRenderer.invoke('ai:generate', prompt),
+    stop: (): Promise<void> => ipcRenderer.invoke('ai:stop'),
+  },
   on: (channel: string, callback: (...args: unknown[]) => void): (() => void) => {
     const subscription = (_event: Electron.IpcRendererEvent, ...args: unknown[]): void => callback(...args)
     ipcRenderer.on(channel, subscription)
