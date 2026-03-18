@@ -20,6 +20,7 @@ function createWindow(): void {
     minWidth: 900,
     minHeight: 600,
     title: "Claude Automation",
+    icon: join(__dirname, "../../build/icon.png"),
     show: false,
     webPreferences: {
       preload: join(__dirname, "../preload/index.js"),

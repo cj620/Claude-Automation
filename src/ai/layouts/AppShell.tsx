@@ -59,14 +59,17 @@ export default function AppShell() {
           >
             {collapsed ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />}
           </span>
-          <span style={{
-            fontWeight: 700,
-            fontSize: 15,
-            letterSpacing: '-0.02em',
-            color: isDark ? '#E6EDF3' : 'rgba(0,0,0,0.88)',
-          }}>
-            <span style={{ color: '#00E5CC' }}>Claude</span> Automation
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <img src={new URL('../../../img/logo.png', import.meta.url).href} alt="logo" style={{ width: 24, height: 24 }} />
+            <span style={{
+              fontWeight: 700,
+              fontSize: 15,
+              letterSpacing: '-0.02em',
+              color: isDark ? '#E6EDF3' : 'rgba(0,0,0,0.88)',
+            }}>
+              <span style={{ color: '#00E5CC' }}>Claude</span> Automation
+            </span>
+          </div>
           <ProjectSwitcher />
         </div>
         <ThemeToggle />
