@@ -1,7 +1,7 @@
 {
   "name": "ai-automation",
   "productName": "Claude Automation",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "main": "./out/main/index.js",
   "scripts": {
     "dev": "electron-vite dev",
@@ -30,7 +30,9 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ]
     },
@@ -38,7 +40,10 @@
       "target": [
         {
           "target": "dmg",
-          "arch": ["x64", "arm64"]
+          "arch": [
+            "x64",
+            "arm64"
+          ]
         }
       ],
       "category": "public.app-category.developer-tools"
