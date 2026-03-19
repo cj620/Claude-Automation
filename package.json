@@ -12,7 +12,10 @@
     "build:all": "npm run build && electron-builder --win --mac",
     "typecheck:node": "tsc --noEmit -p tsconfig.node.json",
     "typecheck:web": "tsc --noEmit -p tsconfig.web.json",
-    "typecheck": "npm run typecheck:node && npm run typecheck:web"
+    "typecheck": "npm run typecheck:node && npm run typecheck:web",
+    "release:patch": "npm version patch && git push origin master --tags",
+    "release:minor": "npm version minor && git push origin master --tags",
+    "release:major": "npm version major && git push origin master --tags"
   },
   "build": {
     "appId": "com.claude.automation",
