@@ -1,3 +1,31 @@
+# Auto Release Notes Implementation Plan
+
+> **For Claude:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task.
+
+**Goal:** Automatically generate categorized Release Notes from Conventional Commits when a tag is pushed.
+
+**Architecture:** Add a `release-notes` job to the existing `release.yml` workflow. This job runs on `ubuntu-latest` (fast, cheap), fetches commit log between previous and current tag, classifies by prefix (`feat:`, `fix:`, etc.), and updates the GitHub Release body via API.
+
+**Tech Stack:** GitHub Actions, bash script, GitHub REST API (`gh` CLI)
+
+---
+
+### Task 1: Add `release-notes` job to workflow
+
+**Files:**
+- Modify: `.github/workflows/release.yml`
+
+**Step 1: Add the `release-notes` job after the existing `release` job**
+
+Add this new job to `.github/workflows/release.yml`. It must:
+- Run on `ubuntu-latest` (no need for matrix — this is text processing)
+- Fetch full git history (`fetch-depth: 0`) to access tags
+- Use a bash script to parse commits and generate notes
+- Update the GitHub Release via `gh release edit`
+
+Replace the entire file with:
+
+```yaml
 name: Release
 
 on:
@@ -108,3 +136,39 @@ jobs:
 
           # Update the GitHub Release body
           gh release edit "$CURRENT_TAG" --notes-file release_notes.md
+```
+
+**Step 2: Commit**
+
+```bash
+git add .github/workflows/release.yml
+git commit -m "feat(ci): add auto-generated release notes from conventional commits"
+```
+
+---
+
+### Task 2: Test with a new tag
+
+**Step 1: Push the commit**
+
+```bash
+git push origin master
+```
+
+**Step 2: Create and push a test tag**
+
+```bash
+npm version patch
+git push origin master --tags
+```
+
+**Step 3: Verify on GitHub**
+
+1. Go to GitHub Actions page — check that both `release` and `release-notes` jobs run
+2. Go to Releases page — verify the release body contains categorized notes
+
+---
+
+### Task 3: Clean up test release (if needed)
+
+If the test release looks good, no cleanup needed. If not, debug from the Actions log and iterate on the script in Task 1.
